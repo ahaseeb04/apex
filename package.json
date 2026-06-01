@@ -1,0 +1,16 @@
+{
+    "name": "powerlifting-tracker",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "patchedDependencies": {
+        "react-native-css-interop@0.2.4": "patches/react-native-css-interop@0.2.4.patch"
+    }
+}

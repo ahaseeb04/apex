@@ -1,0 +1,46 @@
+diff --git a/Users/abdulhaseeb/Code/fresh/node_modules/react-native-css-interop/.cache/android.js b/.cache/android.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/abdulhaseeb/Code/fresh/node_modules/react-native-css-interop/.cache/ios.js b/.cache/ios.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/abdulhaseeb/Code/fresh/node_modules/react-native-css-interop/.cache/macos.js b/.cache/macos.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/abdulhaseeb/Code/fresh/node_modules/react-native-css-interop/.cache/native.js b/.cache/native.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/abdulhaseeb/Code/fresh/node_modules/react-native-css-interop/.cache/windows.js b/.cache/windows.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/dist/metro/index.js b/dist/metro/index.js
+index c91ba6adf049dd5c6eec1ec8301ecc0802f41bfc..c93c45ca7e6b9c127fe927430fa05bee8f650d88 100644
+--- a/dist/metro/index.js
++++ b/dist/metro/index.js
+@@ -176,18 +176,15 @@ async function startCSSProcessor(filePath, platform, isDev, { input, getCSSForPl
+                 ? css
+                 : getNativeJS((0, css_to_rn_1.cssToReactNativeRuntime)(css, options), debug)));
+             debug(`virtualStyles.emit ${platform}`);
++            const rootDir = process.cwd();
++            const canonicalPath = path_1.default.relative(rootDir, filePath);
+             haste.emit("change", {
+-                eventsQueue: [
+-                    {
+-                        filePath,
+-                        metadata: {
+-                            modifiedTime: Date.now(),
+-                            size: 1,
+-                            type: "virtual",
+-                        },
+-                        type: "change",
+-                    },
+-                ],
++                changes: {
++                    addedFiles: [],
++                    modifiedFiles: [[canonicalPath, { modifiedTime: Date.now(), size: 1, type: "virtual" }]],
++                    removedFiles: [],
++                },
++                rootDir,
+             });
+         }).then((css) => {
+             debug(`virtualStyles.initial ${platform}`);
