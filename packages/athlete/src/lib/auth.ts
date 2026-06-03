@@ -30,6 +30,10 @@ export async function signOut() {
     await SecureStore.deleteItemAsync(USER_KEY)
 }
 
+export async function getStoredToken() {
+    return SecureStore.getItemAsync(TOKEN_KEY)
+}
+
 export async function getStoredAuth() {
     const [token, userJson] = await Promise.all([
         SecureStore.getItemAsync(TOKEN_KEY),

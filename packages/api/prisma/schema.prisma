@@ -13,4 +13,67 @@ model User {
     username  String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    programs  Program[]
+}
+
+model Program {
+    id          String   @id @default(uuid())
+    name        String
+    description String?
+    userId      String
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    blocks      Block[]
+}
+
+model Block {
+    id        String   @id @default(uuid())
+    programId String
+    program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+    name      String
+    order     Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    weeks     Week[]
+}
+
+model Week {
+    id                String   @id @default(uuid())
+    blockId           String
+    block             Block    @relation(fields: [blockId], references: [id], onDelete: Cascade)
+    weekNumber        Int
+    fatigueIndex      Json?
+    weeklyCheckIn     Json?
+    userNotesForCoach String?
+    coachNotesForUser String?
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    days              Day[]
+}
+
+model Day {
+    id        String   @id @default(uuid())
+    weekId    String
+    week      Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+    dayNumber Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    exercises Exercise[]
+}
+
+model Exercise {
+    id          String  @id @default(uuid())
+    dayId       String
+    day         Day     @relation(fields: [dayId], references: [id], onDelete: Cascade)
+    name        String
+    sets        Int
+    reps        Int
+    expectedRpe Float?
+    loadRange   String?
+    loadActual  Float?
+    rpeActual   Float?
+    order       Int
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
