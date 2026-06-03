@@ -260,8 +260,9 @@ function seedDay(
                 }
 
                 if (isLogged && !base.loadRange?.startsWith('—')) {
-                    base.loadActual = [140, 145, 150, 155, 160, 165, 170, 175][i % 8]
-                    base.rpeActual = base.expectedRpe != null ? +(base.expectedRpe + 0.5).toFixed(1) : null
+                    base.loadActual = [140, 145, 150, 155, 160, 165, 170, 175][i % 8] ?? null
+                    base.rpeActual =
+                        base.expectedRpe != null ? +(base.expectedRpe + 0.5).toFixed(1) : null
                 }
 
                 return {

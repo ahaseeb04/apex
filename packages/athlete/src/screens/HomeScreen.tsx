@@ -1,3 +1,4 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -5,9 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { apiGet, ApiError, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useAuthStore } from '../stores/authStore'
+import type { HomeStackParamList } from './types'
 
-export default function HomeScreen() {
-    const user = useAuthStore((s) => s.user)
+type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>
+
+export default function HomeScreen({ navigation }: Props) {
     const signOut = useAuthStore((s) => s.signOut)
     const [programs, setPrograms] = useState<ProgramData[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -90,6 +93,11 @@ export default function HomeScreen() {
                         ItemSeparatorComponent={() => <View className="h-3" />}
                         renderItem={({ item }) => (
                             <Pressable
+                                onPress={() =>
+                                    navigation.navigate('Program', {
+                                        program: item,
+                                    })
+                                }
                                 className="bg-surface-secondary rounded-[16px] p-5 active:opacity-80"
                                 accessibilityRole="button"
                                 accessibilityLabel={`${item.name} program`}
