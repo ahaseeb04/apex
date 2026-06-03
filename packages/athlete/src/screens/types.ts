@@ -1,8 +1,9 @@
-import type { ProgramData } from '../lib/api'
 
 export type HomeStackParamList = {
     HomeList: undefined
-    Program: { program: ProgramData }
+    Program: { programId: string }
+    Fatigue: { weekId: string; existing: Record<string, number> | null }
+    Checkin: { weekId: string; existing: Record<string, number> | null }
 }
 
 export type MainTabParamList = {

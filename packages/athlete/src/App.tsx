@@ -8,7 +8,9 @@ import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
+import CheckinScreen from './screens/CheckinScreen'
 import ExerciseLibraryScreen from './screens/ExerciseLibraryScreen'
+import FatigueScreen from './screens/FatigueScreen'
 import HomeScreen from './screens/HomeScreen'
 import ProgramScreen from './screens/ProgramScreen'
 import SignInScreen from './screens/SignInScreen'
@@ -63,6 +65,8 @@ function HomeStackScreen() {
         >
             <HomeStack.Screen name="HomeList" component={HomeScreen} />
             <HomeStack.Screen name="Program" component={ProgramScreen} />
+            <HomeStack.Screen name="Fatigue" component={FatigueScreen} />
+            <HomeStack.Screen name="Checkin" component={CheckinScreen} />
         </HomeStack.Navigator>
     )
 }

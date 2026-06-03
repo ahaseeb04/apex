@@ -7,12 +7,12 @@ datasource db {
 }
 
 model User {
-    id        String   @id @default(uuid())
-    email     String   @unique
+    id        String    @id @default(uuid())
+    email     String    @unique
     password  String
-    username  String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    username  String    @unique
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
     programs  Program[]
 }
 
@@ -53,19 +53,19 @@ model Week {
 }
 
 model Day {
-    id        String   @id @default(uuid())
+    id        String     @id @default(uuid())
     weekId    String
-    week      Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+    week      Week       @relation(fields: [weekId], references: [id], onDelete: Cascade)
     dayNumber Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
     exercises Exercise[]
 }
 
 model Exercise {
-    id          String  @id @default(uuid())
+    id          String   @id @default(uuid())
     dayId       String
-    day         Day     @relation(fields: [dayId], references: [id], onDelete: Cascade)
+    day         Day      @relation(fields: [dayId], references: [id], onDelete: Cascade)
     name        String
     sets        Int
     reps        Int

@@ -95,7 +95,7 @@ export default function HomeScreen({ navigation }: Props) {
                             <Pressable
                                 onPress={() =>
                                     navigation.navigate('Program', {
-                                        program: item,
+                                        programId: item.id,
                                     })
                                 }
                                 className="bg-surface-secondary rounded-[16px] p-5 active:opacity-80"
