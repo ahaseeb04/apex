@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { apiPatch } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
+import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
 
 const labels: Record<string, string> = {
@@ -27,6 +28,8 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'Fatigue'>
 
 export default function FatigueScreen({ navigation, route }: Props) {
     const { weekId, existing } = route.params
+    const theme = useActiveTheme()
+    const c = theme.colors
     const [values, setValues] = useState<Record<string, number>>(existing ?? {})
     const [saving, setSaving] = useState(false)
 
@@ -48,7 +51,7 @@ export default function FatigueScreen({ navigation, route }: Props) {
     }, [weekId, values, navigation])
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <View className="flex-row items-center justify-between px-6 pt-2 pb-4">
                 <Pressable
                     onPress={() => navigation.goBack()}
@@ -56,9 +59,9 @@ export default function FatigueScreen({ navigation, route }: Props) {
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >
-                    <Ionicons name="chevron-back" size={24} color="#0A84FF" />
+                    <Ionicons name="chevron-back" size={24} color={c.accent} />
                 </Pressable>
-                <Text className="text-label text-[17px] font-semibold">
+                <Text className="text-[17px] font-semibold" style={{ color: c.label }}>
                     Fatigue Index
                 </Text>
                 <Pressable
@@ -66,7 +69,7 @@ export default function FatigueScreen({ navigation, route }: Props) {
                     disabled={saving}
                     className="active:opacity-80"
                 >
-                    <Text className="text-accent-blue text-[17px] font-semibold">
+                    <Text className="text-[17px] font-semibold" style={{ color: c.accent }}>
                         {saving ? 'Saving...' : 'Save'}
                     </Text>
                 </Pressable>
@@ -79,10 +82,10 @@ export default function FatigueScreen({ navigation, route }: Props) {
                 {keys.map((key) => (
                     <View key={key} style={{ gap: 6 }}>
                         <View className="flex-row items-center justify-between">
-                            <Text className="text-label text-[15px] font-medium">
+                            <Text className="text-[15px] font-medium" style={{ color: c.label }}>
                                 {labels[key]}
                             </Text>
-                            <Text className="text-accent-blue text-[15px] font-semibold w-5 text-center">
+                            <Text className="text-[15px] font-semibold w-5 text-center" style={{ color: c.accent }}>
                                 {values[key] ?? 0}
                             </Text>
                         </View>
@@ -95,9 +98,9 @@ export default function FatigueScreen({ navigation, route }: Props) {
                             onValueChange={(v) =>
                                 setValues((prev) => ({ ...prev, [key]: Math.round(v) }))
                             }
-                            minimumTrackTintColor="#0A84FF"
-                            maximumTrackTintColor="#2C2C2E"
-                            thumbTintColor="#0A84FF"
+                            minimumTrackTintColor={c.accent}
+                            maximumTrackTintColor={c.surfaceTertiary}
+                            thumbTintColor={c.accent}
                         />
                     </View>
                 ))}

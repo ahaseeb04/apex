@@ -9,6 +9,12 @@ export type HomeStackParamList = {
 export type MainTabParamList = {
     Home: undefined
     ExerciseLibrary: undefined
+    Settings: undefined
+}
+
+export type SettingsStackParamList = {
+    SettingsList: undefined
+    Appearance: undefined
 }
 
 export type RootStackParamList = {

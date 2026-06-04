@@ -13,39 +13,33 @@ import ExerciseLibraryScreen from './screens/ExerciseLibraryScreen'
 import FatigueScreen from './screens/FatigueScreen'
 import HomeScreen from './screens/HomeScreen'
 import ProgramScreen from './screens/ProgramScreen'
+import SettingsScreen from './screens/SettingsScreen'
+import AppearanceScreen from './screens/AppearanceScreen'
 import SignInScreen from './screens/SignInScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import type {
     HomeStackParamList,
     MainTabParamList,
     RootStackParamList,
+    SettingsStackParamList,
 } from './screens/types'
 import { useAuthStore } from './stores/authStore'
+import { useActiveTheme } from './stores/themeStore'
 
 const RootStack = createNativeStackNavigator<RootStackParamList>()
 const HomeStack = createNativeStackNavigator<HomeStackParamList>()
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
-const theme = {
-    ...DarkTheme,
-    colors: {
-        ...DarkTheme.colors,
-        background: '#000000',
-        card: '#1C1C1E',
-        primary: '#0A84FF',
-        text: '#FFFFFF',
-        border: '#38383A',
-        notification: '#FF453A',
-    },
-}
-
 function AuthStack() {
+    const theme = useActiveTheme()
+
     return (
         <RootStack.Navigator
             screenOptions={{
                 headerShown: false,
                 animation: 'slide_from_right',
-                contentStyle: { backgroundColor: '#000000' },
+                contentStyle: { backgroundColor: theme.colors.surface },
             }}
         >
             <RootStack.Screen name="SignIn" component={SignInScreen} />
@@ -55,12 +49,14 @@ function AuthStack() {
 }
 
 function HomeStackScreen() {
+    const theme = useActiveTheme()
+
     return (
         <HomeStack.Navigator
             screenOptions={{
                 headerShown: false,
                 animation: 'slide_from_right',
-                contentStyle: { backgroundColor: '#000000' },
+                contentStyle: { backgroundColor: theme.colors.surface },
             }}
         >
             <HomeStack.Screen name="HomeList" component={HomeScreen} />
@@ -71,22 +67,42 @@ function HomeStackScreen() {
     )
 }
 
-const tabBarBaseStyle = {
-    backgroundColor: '#0D0D0D',
-    borderTopColor: '#2C2C2E',
-    borderTopWidth: 1,
-    paddingTop: 4,
-    paddingBottom: 4,
+function SettingsStackScreen() {
+    const theme = useActiveTheme()
+
+    return (
+        <SettingsStack.Navigator
+            screenOptions={{
+                headerShown: false,
+                animation: 'slide_from_right',
+                contentStyle: { backgroundColor: theme.colors.surface },
+            }}
+        >
+            <SettingsStack.Screen name="SettingsList" component={SettingsScreen} />
+            <SettingsStack.Screen name="Appearance" component={AppearanceScreen} />
+        </SettingsStack.Navigator>
+    )
 }
 
 function MainTabs() {
+    const theme = useActiveTheme()
+    const c = theme.colors
+
+    const tabBarBaseStyle = {
+        backgroundColor: c.tabBar,
+        borderTopColor: c.tabBarBorder,
+        borderTopWidth: 1,
+        paddingTop: 4,
+        paddingBottom: 4,
+    }
+
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: tabBarBaseStyle,
-                tabBarActiveTintColor: '#0A84FF',
-                tabBarInactiveTintColor: '#636366',
+                tabBarActiveTintColor: c.accent,
+                tabBarInactiveTintColor: c.labelTertiary,
                 tabBarLabelStyle: {
                     fontSize: 10,
                     fontWeight: '600',
@@ -121,6 +137,16 @@ function MainTabs() {
                     ),
                 }}
             />
+            <Tab.Screen
+                name="Settings"
+                component={SettingsStackScreen}
+                options={{
+                    tabBarLabel: 'Settings',
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="settings-outline" size={size} color={color} />
+                    ),
+                }}
+            />
         </Tab.Navigator>
     )
 }
@@ -134,10 +160,15 @@ function RootNavigator() {
         initialize()
     }, [initialize])
 
+    const theme = useActiveTheme()
+
     if (isLoading) {
         return (
-            <View className="flex-1 items-center justify-center bg-surface">
-                <ActivityIndicator size="large" color="#0A84FF" />
+            <View
+                className="flex-1 items-center justify-center"
+                style={{ backgroundColor: theme.colors.surface }}
+            >
+                <ActivityIndicator size="large" color={theme.colors.accent} />
             </View>
         )
     }
@@ -146,10 +177,32 @@ function RootNavigator() {
 }
 
 export default function App() {
+    const theme = useActiveTheme()
+    const c = theme.colors
+
+    const navigationTheme = {
+        ...DarkTheme,
+        colors: {
+            ...DarkTheme.colors,
+            background: c.surface,
+            card: c.surfaceSecondary,
+            primary: c.accent,
+            text: c.label,
+            border: c.border,
+            notification: c.accent,
+        },
+    }
+
+    const r = parseInt(c.label.slice(1, 3), 16)
+    const g = parseInt(c.label.slice(3, 5), 16)
+    const b = parseInt(c.label.slice(5, 7), 16)
+    const labelIsLight = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5
+    const statusBarStyle = labelIsLight ? 'light' as const : 'dark' as const
+
     return (
-        <NavigationContainer theme={theme}>
+        <NavigationContainer theme={navigationTheme}>
             <RootNavigator />
-            <StatusBar style="light" />
+            <StatusBar style={statusBarStyle} />
         </NavigationContainer>
     )
 }

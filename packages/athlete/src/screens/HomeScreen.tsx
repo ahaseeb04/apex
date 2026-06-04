@@ -6,12 +6,15 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { apiGet, ApiError, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useAuthStore } from '../stores/authStore'
+import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>
 
 export default function HomeScreen({ navigation }: Props) {
     const signOut = useAuthStore((s) => s.signOut)
+    const theme = useActiveTheme()
+    const c = theme.colors
     const [programs, setPrograms] = useState<ProgramData[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isRefreshing, setIsRefreshing] = useState(false)
@@ -43,10 +46,10 @@ export default function HomeScreen({ navigation }: Props) {
     }, [loadPrograms])
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <View className="flex-1 px-6">
                 <View className="flex-row items-center justify-between pt-4 pb-6">
-                    <Text className="text-label text-[34px] font-bold tracking-tight">
+                    <Text className="text-[34px] font-bold tracking-tight" style={{ color: c.label }}>
                         Programs
                     </Text>
                     <Pressable
@@ -54,7 +57,7 @@ export default function HomeScreen({ navigation }: Props) {
                         accessibilityRole="button"
                         accessibilityLabel="Sign Out"
                     >
-                        <Text className="text-accent-blue text-[15px] font-medium active:opacity-80">
+                        <Text className="text-[15px] font-medium active:opacity-80" style={{ color: c.accent }}>
                             Sign Out
                         </Text>
                     </Pressable>
@@ -62,23 +65,23 @@ export default function HomeScreen({ navigation }: Props) {
 
                 {isLoading ? (
                     <View className="flex-1 items-center justify-center">
-                        <ActivityIndicator size="large" color="#0A84FF" />
+                        <ActivityIndicator size="large" color={c.accent} />
                     </View>
                 ) : error ? (
                     <View className="flex-1 items-center justify-center px-4">
-                        <Text className="text-accent-red text-[15px] text-center">{error}</Text>
+                        <Text className="text-[15px] text-center" style={{ color: c.accent }}>{error}</Text>
                         <Pressable
                             className="mt-4 active:opacity-80"
                             onPress={() => loadPrograms()}
                             accessibilityRole="button"
                             accessibilityLabel="Retry loading programs"
                         >
-                            <Text className="text-accent-blue text-[15px] font-medium">Retry</Text>
+                            <Text className="text-[15px] font-medium" style={{ color: c.accent }}>Retry</Text>
                         </Pressable>
                     </View>
                 ) : programs.length === 0 ? (
                     <View className="flex-1 items-center justify-center">
-                        <Text className="text-label-secondary text-[17px]">
+                        <Text className="text-[17px]" style={{ color: c.labelSecondary }}>
                             No programs yet
                         </Text>
                     </View>
@@ -98,20 +101,23 @@ export default function HomeScreen({ navigation }: Props) {
                                         programId: item.id,
                                     })
                                 }
-                                className="bg-surface-secondary rounded-[16px] p-5 active:opacity-80"
+                                className="rounded-[16px] p-5 active:opacity-80"
+                                style={{ backgroundColor: c.surfaceSecondary }}
                                 accessibilityRole="button"
                                 accessibilityLabel={`${item.name} program`}
                             >
                                 <Text
-                                    className="text-label text-[17px] font-semibold"
+                                    className="text-[17px] font-semibold"
                                     numberOfLines={1}
+                                    style={{ color: c.label }}
                                 >
                                     {item.name}
                                 </Text>
                                 {item.description ? (
                                     <Text
-                                        className="text-label-secondary text-[15px] mt-1"
+                                        className="text-[15px] mt-1"
                                         numberOfLines={2}
+                                        style={{ color: c.labelSecondary }}
                                     >
                                         {item.description}
                                     </Text>
@@ -139,10 +145,12 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 function MetadataBadge({ value, label }: { value: number; label: string }) {
+    const c = useActiveTheme().colors
+
     return (
         <View className="flex-row items-center" style={{ gap: 4 }}>
-            <Text className="text-accent-blue text-[13px] font-medium">{value}</Text>
-            <Text className="text-label-tertiary text-[13px]">
+            <Text className="text-[13px] font-medium" style={{ color: c.accent }}>{value}</Text>
+            <Text className="text-[13px]" style={{ color: c.labelTertiary }}>
                 {value === 1 ? label : `${label}s`}
             </Text>
         </View>

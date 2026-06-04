@@ -8,12 +8,15 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { apiGet, apiPatch, type ExerciseData, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useProgramStore } from '../stores/programStore'
+import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Program'>
 
 export default function ProgramScreen({ navigation, route }: Props) {
     const { programId } = route.params
+    const theme = useActiveTheme()
+    const c = theme.colors
     const [program, setProgram] = useState<ProgramData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const selectedBlockId = useProgramStore((s) => s.selectedBlockId[programId])
@@ -47,8 +50,11 @@ export default function ProgramScreen({ navigation, route }: Props) {
 
     if (isLoading || !program) {
         return (
-            <SafeAreaView className="flex-1 bg-surface items-center justify-center">
-                <ActivityIndicator size="large" color="#0A84FF" />
+            <SafeAreaView
+                className="flex-1 items-center justify-center"
+                style={{ backgroundColor: c.surface }}
+            >
+                <ActivityIndicator size="large" color={c.accent} />
             </SafeAreaView>
         )
     }
@@ -76,7 +82,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
     const exercises = activeDay?.exercises ?? []
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <ScrollView
                 className="flex-1"
                 contentContainerStyle={{ paddingBottom: 40 }}
@@ -89,16 +95,22 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         accessibilityRole="button"
                         accessibilityLabel="Go back"
                     >
-                        <Ionicons name="chevron-back" size={24} color="#0A84FF" />
+                        <Ionicons name="chevron-back" size={24} color={c.accent} />
                     </Pressable>
                 </View>
 
                 <View className="px-6 mb-6">
-                    <Text className="text-label text-[30px] font-bold tracking-tight">
+                    <Text
+                        className="text-[30px] font-bold tracking-tight"
+                        style={{ color: c.label }}
+                    >
                         {program.name}
                     </Text>
                     {program.description ? (
-                        <Text className="text-label-secondary text-[15px] mt-2 leading-[22px]">
+                        <Text
+                            className="text-[15px] mt-2 leading-[22px]"
+                            style={{ color: c.labelSecondary }}
+                        >
                             {program.description}
                         </Text>
                     ) : null}
@@ -106,7 +118,10 @@ export default function ProgramScreen({ navigation, route }: Props) {
 
                 {program.blocks.length > 0 && (
                     <View className="mb-6">
-                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide px-6 mb-3">
+                        <Text
+                            className="text-[11px] font-semibold uppercase tracking-wide px-6 mb-3"
+                            style={{ color: c.labelTertiary }}
+                        >
                             Block
                         </Text>
                         <ScrollView
@@ -134,17 +149,21 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                                 }
                                             }
                                         }}
-                                        className={`rounded-xl px-4 py-[8px] active:opacity-80 ${
-                                            isActive ? 'bg-label' : 'bg-surface-secondary'
-                                        }`}
+                                        className="rounded-xl px-4 py-[8px] active:opacity-80"
+                                        style={{
+                                            backgroundColor: isActive
+                                                ? c.accent
+                                                : c.surfaceSecondary,
+                                        }}
                                         accessibilityRole="button"
                                         accessibilityLabel={`${block.name} block`}
                                         accessibilityState={{ selected: isActive }}
                                     >
                                         <Text
-                                            className={`text-[13px] font-semibold ${
-                                                isActive ? 'text-surface' : 'text-label-secondary'
-                                            }`}
+                                            className="text-[13px] font-semibold"
+                                            style={{
+                                                color: isActive ? c.label : c.labelSecondary,
+                                            }}
                                         >
                                             {block.name}
                                         </Text>
@@ -154,7 +173,10 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         </ScrollView>
 
                         <View className="px-6 mt-5">
-                            <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide mb-3">
+                            <Text
+                                className="text-[11px] font-semibold uppercase tracking-wide mb-3"
+                                style={{ color: c.labelTertiary }}
+                            >
                                 Week & Day
                             </Text>
                             <View className="flex-row" style={{ gap: 10 }}>
@@ -230,7 +252,10 @@ export default function ProgramScreen({ navigation, route }: Props) {
 
                 {exercises.length > 0 && (
                     <View className="mb-6">
-                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide px-6 mb-3">
+                        <Text
+                            className="text-[11px] font-semibold uppercase tracking-wide px-6 mb-3"
+                            style={{ color: c.labelTertiary }}
+                        >
                             Exercises
                         </Text>
                         <ExerciseTable exercises={exercises} />
@@ -239,7 +264,10 @@ export default function ProgramScreen({ navigation, route }: Props) {
 
                 {activeWeek && (
                     <View className="px-6" style={{ gap: 14 }}>
-                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide">
+                        <Text
+                            className="text-[11px] font-semibold uppercase tracking-wide"
+                            style={{ color: c.labelTertiary }}
+                        >
                             Metrics
                         </Text>
                         <NotesField
@@ -260,7 +288,8 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                             existing: activeWeek.fatigueIndex,
                                         })
                                     }
-                                    className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                                    className="rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                                    style={{ backgroundColor: c.surfaceSecondary }}
                                     accessibilityRole="button"
                                     accessibilityLabel="Fatigue Index"
                                 >
@@ -268,13 +297,20 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                         <Ionicons
                                             name="speedometer-outline"
                                             size={16}
-                                            color="#8E8E93"
+                                            color={c.labelSecondary}
                                         />
-                                        <Text className="text-label text-[14px] font-medium">
+                                        <Text
+                                            className="text-[14px] font-medium"
+                                            style={{ color: c.label }}
+                                        >
                                             Fatigue Index
                                         </Text>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={14} color="#636366" />
+                                    <Ionicons
+                                        name="chevron-forward"
+                                        size={14}
+                                        color={c.labelTertiary}
+                                    />
                                 </Pressable>
                             </View>
                             <View className="flex-1">
@@ -285,17 +321,29 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                             existing: activeWeek.weeklyCheckIn,
                                         })
                                     }
-                                    className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                                    className="rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                                    style={{ backgroundColor: c.surfaceSecondary }}
                                     accessibilityRole="button"
                                     accessibilityLabel="Weekly Check-In"
                                 >
                                     <View className="flex-row items-center" style={{ gap: 6 }}>
-                                        <Ionicons name="scale-outline" size={16} color="#8E8E93" />
-                                        <Text className="text-label text-[14px] font-medium">
+                                        <Ionicons
+                                            name="scale-outline"
+                                            size={16}
+                                            color={c.labelSecondary}
+                                        />
+                                        <Text
+                                            className="text-[14px] font-medium"
+                                            style={{ color: c.label }}
+                                        >
                                             Check-In
                                         </Text>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={14} color="#636366" />
+                                    <Ionicons
+                                        name="chevron-forward"
+                                        size={14}
+                                        color={c.labelTertiary}
+                                    />
                                 </Pressable>
                             </View>
                         </View>
@@ -307,14 +355,22 @@ export default function ProgramScreen({ navigation, route }: Props) {
 }
 
 function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
+    const c = useActiveTheme().colors
+
     return (
         <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 24 }}
         >
-            <View className="bg-surface-secondary rounded-xl overflow-hidden">
-                <View className="flex-row items-center px-4 py-3 border-b border-[#38383A]">
+            <View
+                className="rounded-xl overflow-hidden"
+                style={{ backgroundColor: c.surfaceSecondary }}
+            >
+                <View
+                    className="flex-row items-center px-4 py-3"
+                    style={{ borderBottomWidth: 1, borderColor: c.border }}
+                >
                     <TableHeader label="Exercise" className="w-[140px]" />
                     <TableHeader label="Sets" className="w-[80px] text-center" />
                     <TableHeader label="RPE" className="w-[52px] text-center" />
@@ -336,9 +392,12 @@ function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
 }
 
 function TableHeader({ label, className }: { label: string; className: string }) {
+    const c = useActiveTheme().colors
+
     return (
         <Text
-            className={`text-label-tertiary text-[11px] font-semibold uppercase tracking-wide ${className}`}
+            className={`text-[11px] font-semibold uppercase tracking-wide ${className}`}
+            style={{ color: c.labelTertiary }}
         >
             {label}
         </Text>
@@ -346,6 +405,8 @@ function TableHeader({ label, className }: { label: string; className: string })
 }
 
 function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boolean }) {
+    const c = useActiveTheme().colors
+
     const saveExercise = useCallback(
         async (field: 'loadActual' | 'rpeActual', value: string) => {
             const num = value.trim() ? Number(value) : null
@@ -363,39 +424,47 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
 
     return (
         <View
-            className={`flex-row items-center px-4 py-3 ${
-                isLast ? '' : 'border-b border-[#38383A]'
-            }`}
+            className="flex-row items-center px-4 py-3"
+            style={isLast ? undefined : { borderBottomWidth: 1, borderColor: c.border }}
         >
-            <Text className="text-label text-[15px] font-medium w-[140px]" numberOfLines={1}>
+            <Text
+                className="text-[15px] font-medium w-[140px]"
+                numberOfLines={1}
+                style={{ color: c.label }}
+            >
                 {exercise.name}
             </Text>
-            <Text className="text-label-secondary text-[15px] w-[80px] text-center">
+            <Text className="text-[15px] w-[80px] text-center" style={{ color: c.labelSecondary }}>
                 {exercise.sets}×{exercise.reps}
             </Text>
-            <Text className="text-label-secondary text-[15px] w-[52px] text-center">
+            <Text className="text-[15px] w-[52px] text-center" style={{ color: c.labelSecondary }}>
                 {exercise.expectedRpe != null ? `@${exercise.expectedRpe}` : '—'}
             </Text>
-            <Text className="text-label-secondary text-[15px] w-[68px] text-center mr-4">
+            <Text
+                className="text-[15px] w-[68px] text-center mr-4"
+                style={{ color: c.labelSecondary }}
+            >
                 {exercise.loadRange ?? '—'}
             </Text>
             <TextInput
-                className="text-label text-[15px] bg-surface-tertiary rounded-lg w-[64px] text-center py-1.5"
+                className="text-[15px] rounded-lg w-[64px] text-center py-1.5"
+                style={{ color: c.label, backgroundColor: c.surfaceTertiary }}
                 placeholder="—"
-                placeholderTextColor="#636366"
+                placeholderTextColor={c.labelTertiary}
                 keyboardType="numeric"
-                cursorColor="#0A84FF"
-                selectionColor="#0A84FF"
+                cursorColor={c.accent}
+                selectionColor={c.accent}
                 defaultValue={exercise.loadActual != null ? String(exercise.loadActual) : ''}
                 onEndEditing={(e) => saveExercise('loadActual', e.nativeEvent.text)}
             />
             <TextInput
-                className="text-label text-[15px] bg-surface-tertiary rounded-lg w-[52px] text-center py-1.5 ml-3"
+                className="text-[15px] rounded-lg w-[52px] text-center py-1.5 ml-3"
+                style={{ color: c.label, backgroundColor: c.surfaceTertiary }}
                 placeholder="—"
-                placeholderTextColor="#636366"
+                placeholderTextColor={c.labelTertiary}
                 keyboardType="numeric"
-                cursorColor="#0A84FF"
-                selectionColor="#0A84FF"
+                cursorColor={c.accent}
+                selectionColor={c.accent}
                 defaultValue={exercise.rpeActual != null ? String(exercise.rpeActual) : ''}
                 onEndEditing={(e) => saveExercise('rpeActual', e.nativeEvent.text)}
             />
@@ -414,6 +483,7 @@ function NotesField({
     editable?: boolean
     weekId?: string
 }) {
+    const c = useActiveTheme().colors
     const [text, setText] = useState(value ?? '')
     const [saving, setSaving] = useState(false)
 
@@ -434,21 +504,25 @@ function NotesField({
     }, [weekId, text])
 
     return (
-        <View className="bg-surface-secondary rounded-xl px-4 py-3">
-            <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide mb-2">
+        <View className="rounded-xl px-4 py-3" style={{ backgroundColor: c.surfaceSecondary }}>
+            <Text
+                className="text-[11px] font-semibold uppercase tracking-wide mb-2"
+                style={{ color: c.labelTertiary }}
+            >
                 {label}
             </Text>
 
             {editable ? (
                 <View>
                     <TextInput
-                        className="text-label text-[15px] leading-[22px]"
+                        className="text-[15px] leading-[22px]"
+                        style={{ color: c.label }}
                         placeholder="Write a note..."
-                        placeholderTextColor="#636366"
+                        placeholderTextColor={c.labelTertiary}
                         multiline
                         textAlignVertical="top"
-                        cursorColor="#0A84FF"
-                        selectionColor="#0A84FF"
+                        cursorColor={c.accent}
+                        selectionColor={c.accent}
                         value={text}
                         onChangeText={setText}
                     />
@@ -456,18 +530,18 @@ function NotesField({
                         <Pressable
                             onPress={handleSave}
                             disabled={saving}
-                            className="bg-label rounded-lg px-4 py-1.5 active:opacity-80"
+                            className="rounded-lg px-4 py-1.5 active:opacity-80"
                             accessibilityRole="button"
                             accessibilityLabel="Save note"
                         >
-                            <Text className="text-surface text-[13px] font-semibold">
+                            <Text className="text-[13px] font-semibold" style={{ color: c.accent }}>
                                 {saving ? 'Saving...' : 'Save'}
                             </Text>
                         </Pressable>
                     </View>
                 </View>
             ) : (
-                <Text className="text-label-secondary text-[15px] leading-[22px]">
+                <Text className="text-[15px] leading-[22px]" style={{ color: c.labelSecondary }}>
                     {value ?? ''}
                 </Text>
             )}
@@ -486,21 +560,24 @@ function DropdownTrigger({
     onPress: () => void
     accessibilityLabel: string
 }) {
+    const c = useActiveTheme().colors
+
     return (
         <Pressable
             onPress={onPress}
-            className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+            className="rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+            style={{ backgroundColor: c.surfaceSecondary }}
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
             accessibilityState={{ expanded: isOpen }}
         >
-            <Text className="text-label text-[14px] font-medium" numberOfLines={1}>
+            <Text className="text-[14px] font-medium" numberOfLines={1} style={{ color: c.label }}>
                 {label}
             </Text>
             <Ionicons
                 name={isOpen ? 'chevron-up' : 'chevron-down'}
                 size={15}
-                color="#636366"
+                color={c.labelTertiary}
                 style={{ marginLeft: 6 }}
             />
         </Pressable>
@@ -508,10 +585,12 @@ function DropdownTrigger({
 }
 
 function DropdownList({ children }: { children: React.ReactNode }) {
+    const c = useActiveTheme().colors
+
     return (
         <View
-            className="absolute left-0 right-0 mt-2 bg-surface-secondary rounded-xl overflow-hidden"
-            style={{ top: '100%', zIndex: 20 }}
+            className="absolute left-0 right-0 mt-2 rounded-xl overflow-hidden"
+            style={{ top: '100%', zIndex: 20, backgroundColor: c.surfaceSecondary }}
         >
             {children}
         </View>
@@ -529,23 +608,26 @@ function DropdownItem({
     isLast: boolean
     onPress: () => void
 }) {
+    const c = useActiveTheme().colors
+
     return (
         <Pressable
             onPress={onPress}
-            className={`flex-row items-center justify-between px-4 py-3 active:opacity-80 ${
-                isLast ? '' : 'border-b border-[#38383A]'
-            }`}
+            className="flex-row items-center justify-between px-4 py-3 active:opacity-80"
+            style={isLast ? undefined : { borderBottomWidth: 1, borderColor: c.border }}
             accessibilityRole="button"
             accessibilityLabel={label}
         >
             <Text
-                className={`text-[15px] ${
-                    isActive ? 'text-accent-blue font-medium' : 'text-label'
-                }`}
+                className="text-[15px]"
+                style={{
+                    color: isActive ? c.accent : c.label,
+                    fontWeight: isActive ? '500' : '400',
+                }}
             >
                 {label}
             </Text>
-            {isActive && <Ionicons name="checkmark" size={18} color="#0A84FF" />}
+            {isActive && <Ionicons name="checkmark" size={18} color={c.accent} />}
         </Pressable>
     )
 }

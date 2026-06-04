@@ -14,12 +14,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 
 import InputField from '../components/InputField'
 import { ApiError, useAuthStore } from '../stores/authStore'
+import { useActiveTheme } from '../stores/themeStore'
 import type { RootStackParamList } from './types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignIn'>
 
 export default function SignInScreen({ navigation }: Props) {
     const signIn = useAuthStore((s) => s.signIn)
+    const theme = useActiveTheme()
+    const c = theme.colors
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -49,17 +52,17 @@ export default function SignInScreen({ navigation }: Props) {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
                 <Pressable className="flex-1 px-6" onPress={Keyboard.dismiss}>
                     <View className="flex-1 justify-center" style={{ rowGap: 0 }}>
-                        <Text className="text-label text-[34px] font-bold tracking-tight">
+                        <Text className="text-[34px] font-bold tracking-tight" style={{ color: c.label }}>
                             Sign In
                         </Text>
-                        <Text className="text-label-secondary text-[17px] mb-12 mt-1">
+                        <Text className="text-[17px] mb-12 mt-1" style={{ color: c.labelSecondary }}>
                             Welcome back to PeakPound
                         </Text>
 
@@ -81,29 +84,30 @@ export default function SignInScreen({ navigation }: Props) {
                         </View>
 
                         {error ? (
-                            <Text className="text-accent-red text-[15px] mt-4 text-center">
+                            <Text className="text-[15px] mt-4 text-center" style={{ color: c.accent }}>
                                 {error}
                             </Text>
                         ) : null}
 
                         <Pressable
-                            className="bg-accent-blue rounded-[14px] py-[17px] mt-6 items-center justify-center active:opacity-80 disabled:opacity-50"
+                            className="rounded-[14px] py-[17px] mt-6 items-center justify-center active:opacity-80 disabled:opacity-50"
+                            style={{ backgroundColor: c.accent }}
                             onPress={handleSignIn}
                             disabled={loading}
                             accessibilityRole="button"
                             accessibilityLabel="Sign In"
                         >
                             {loading ? (
-                                <ActivityIndicator color="#FFFFFF" size="small" />
+                                <ActivityIndicator color={c.surface} size="small" />
                             ) : (
-                                <Text className="text-label text-center font-semibold text-[17px] tracking-tight">
+                                <Text className="text-center font-semibold text-[17px] tracking-tight" style={{ color: c.label }}>
                                     Sign In
                                 </Text>
                             )}
                         </Pressable>
 
                         <View className="flex-row justify-center mt-10">
-                            <Text className="text-label-secondary text-[15px]">
+                            <Text className="text-[15px]" style={{ color: c.labelSecondary }}>
                                 Don&apos;t have an account?{' '}
                             </Text>
                             <Pressable
@@ -111,7 +115,7 @@ export default function SignInScreen({ navigation }: Props) {
                                 accessibilityRole="button"
                                 accessibilityLabel="Sign Up"
                             >
-                                <Text className="text-accent-blue font-semibold text-[15px]">
+                                <Text className="font-semibold text-[15px]" style={{ color: c.accent }}>
                                     Sign Up
                                 </Text>
                             </Pressable>
