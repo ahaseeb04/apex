@@ -79,40 +79,42 @@ export default function ProgramScreen({ navigation, route }: Props) {
         <SafeAreaView className="flex-1 bg-surface">
             <ScrollView
                 className="flex-1"
-                contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
+                contentContainerStyle={{ paddingBottom: 40 }}
                 keyboardShouldPersistTaps="handled"
             >
-                <View className="px-6">
-                    <View className="flex-row items-center pt-2 pb-4">
-                        <Pressable
-                            onPress={() => navigation.goBack()}
-                            className="w-8 h-8 items-center justify-center active:opacity-80"
-                            accessibilityRole="button"
-                            accessibilityLabel="Go back"
-                        >
-                            <Ionicons name="chevron-back" size={24} color="#0A84FF" />
-                        </Pressable>
-                    </View>
+                <View className="px-6 pt-4 pb-2">
+                    <Pressable
+                        onPress={() => navigation.goBack()}
+                        className="w-8 h-8 items-center justify-center -ml-2 active:opacity-80"
+                        accessibilityRole="button"
+                        accessibilityLabel="Go back"
+                    >
+                        <Ionicons name="chevron-back" size={24} color="#0A84FF" />
+                    </Pressable>
+                </View>
 
-                    <Text className="text-label text-[28px] font-bold tracking-tight">
+                <View className="px-6 mb-6">
+                    <Text className="text-label text-[30px] font-bold tracking-tight">
                         {program.name}
                     </Text>
                     {program.description ? (
-                        <Text className="text-label-secondary text-[15px] mt-1.5 leading-[22px]">
+                        <Text className="text-label-secondary text-[15px] mt-2 leading-[22px]">
                             {program.description}
                         </Text>
                     ) : null}
                 </View>
 
                 {program.blocks.length > 0 && (
-                    <View>
+                    <View className="mb-6">
+                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide px-6 mb-3">
+                            Block
+                        </Text>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            className="mt-6"
                             contentContainerStyle={{
                                 paddingHorizontal: 24,
-                                gap: 6,
+                                gap: 8,
                             }}
                         >
                             {program.blocks.map((block) => {
@@ -132,7 +134,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                                 }
                                             }
                                         }}
-                                        className={`rounded-xl px-3.5 py-[7px] active:opacity-80 ${
+                                        className={`rounded-xl px-4 py-[8px] active:opacity-80 ${
                                             isActive ? 'bg-label' : 'bg-surface-secondary'
                                         }`}
                                         accessibilityRole="button"
@@ -140,7 +142,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                         accessibilityState={{ selected: isActive }}
                                     >
                                         <Text
-                                            className={`text-[13px] font-medium ${
+                                            className={`text-[13px] font-semibold ${
                                                 isActive ? 'text-surface' : 'text-label-secondary'
                                             }`}
                                         >
@@ -151,78 +153,95 @@ export default function ProgramScreen({ navigation, route }: Props) {
                             })}
                         </ScrollView>
 
-                        <View className="mx-6 mt-4 flex-row" style={{ gap: 8 }}>
-                            <View
-                                className="flex-1 relative"
-                                style={{ zIndex: openDropdown === 'week' ? 20 : 1 }}
-                            >
-                                <DropdownTrigger
-                                    label={activeWeek ? `Week ${activeWeek.weekNumber}` : 'Week'}
-                                    isOpen={openDropdown === 'week'}
-                                    onPress={() =>
-                                        setOpenDropdown(openDropdown === 'week' ? null : 'week')
-                                    }
-                                    accessibilityLabel="Select week"
-                                />
-                                {openDropdown === 'week' && activeBlock && (
-                                    <DropdownList>
-                                        {activeBlock.weeks.map((week, i) => (
-                                            <DropdownItem
-                                                key={week.id}
-                                                label={`Week ${week.weekNumber}`}
-                                                isActive={week.id === activeWeekId}
-                                                isLast={i === activeBlock.weeks.length - 1}
-                                                onPress={() => {
-                                                    selectWeek(programId, week.id)
-                                                    const firstDay = week.days[0]
-                                                    if (firstDay) {
-                                                        selectDay(programId, firstDay.id)
-                                                    }
-                                                    setOpenDropdown(null)
-                                                }}
-                                            />
-                                        ))}
-                                    </DropdownList>
-                                )}
-                            </View>
+                        <View className="px-6 mt-5">
+                            <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide mb-3">
+                                Week & Day
+                            </Text>
+                            <View className="flex-row" style={{ gap: 10 }}>
+                                <View
+                                    className="flex-1 relative"
+                                    style={{ zIndex: openDropdown === 'week' ? 20 : 1 }}
+                                >
+                                    <DropdownTrigger
+                                        label={
+                                            activeWeek ? `Week ${activeWeek.weekNumber}` : 'Week'
+                                        }
+                                        isOpen={openDropdown === 'week'}
+                                        onPress={() =>
+                                            setOpenDropdown(openDropdown === 'week' ? null : 'week')
+                                        }
+                                        accessibilityLabel="Select week"
+                                    />
+                                    {openDropdown === 'week' && activeBlock && (
+                                        <DropdownList>
+                                            {activeBlock.weeks.map((week, i) => (
+                                                <DropdownItem
+                                                    key={week.id}
+                                                    label={`Week ${week.weekNumber}`}
+                                                    isActive={week.id === activeWeekId}
+                                                    isLast={i === activeBlock.weeks.length - 1}
+                                                    onPress={() => {
+                                                        selectWeek(programId, week.id)
+                                                        const firstDay = week.days[0]
+                                                        if (firstDay) {
+                                                            selectDay(programId, firstDay.id)
+                                                        }
+                                                        setOpenDropdown(null)
+                                                    }}
+                                                />
+                                            ))}
+                                        </DropdownList>
+                                    )}
+                                </View>
 
-                            <View
-                                className="flex-1 relative"
-                                style={{ zIndex: openDropdown === 'day' ? 20 : 1 }}
-                            >
-                                <DropdownTrigger
-                                    label={activeDay ? `Day ${activeDay.dayNumber}` : 'Day'}
-                                    isOpen={openDropdown === 'day'}
-                                    onPress={() =>
-                                        setOpenDropdown(openDropdown === 'day' ? null : 'day')
-                                    }
-                                    accessibilityLabel="Select day"
-                                />
-                                {openDropdown === 'day' && activeWeek && (
-                                    <DropdownList>
-                                        {activeWeek.days.map((day, i) => (
-                                            <DropdownItem
-                                                key={day.id}
-                                                label={`Day ${day.dayNumber}`}
-                                                isActive={day.id === activeDayId}
-                                                isLast={i === activeWeek.days.length - 1}
-                                                onPress={() => {
-                                                    selectDay(programId, day.id)
-                                                    setOpenDropdown(null)
-                                                }}
-                                            />
-                                        ))}
-                                    </DropdownList>
-                                )}
+                                <View
+                                    className="flex-1 relative"
+                                    style={{ zIndex: openDropdown === 'day' ? 20 : 1 }}
+                                >
+                                    <DropdownTrigger
+                                        label={activeDay ? `Day ${activeDay.dayNumber}` : 'Day'}
+                                        isOpen={openDropdown === 'day'}
+                                        onPress={() =>
+                                            setOpenDropdown(openDropdown === 'day' ? null : 'day')
+                                        }
+                                        accessibilityLabel="Select day"
+                                    />
+                                    {openDropdown === 'day' && activeWeek && (
+                                        <DropdownList>
+                                            {activeWeek.days.map((day, i) => (
+                                                <DropdownItem
+                                                    key={day.id}
+                                                    label={`Day ${day.dayNumber}`}
+                                                    isActive={day.id === activeDayId}
+                                                    isLast={i === activeWeek.days.length - 1}
+                                                    onPress={() => {
+                                                        selectDay(programId, day.id)
+                                                        setOpenDropdown(null)
+                                                    }}
+                                                />
+                                            ))}
+                                        </DropdownList>
+                                    )}
+                                </View>
                             </View>
                         </View>
                     </View>
                 )}
 
-                {exercises.length > 0 && <ExerciseTable exercises={exercises} />}
+                {exercises.length > 0 && (
+                    <View className="mb-6">
+                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide px-6 mb-3">
+                            Exercises
+                        </Text>
+                        <ExerciseTable exercises={exercises} />
+                    </View>
+                )}
 
                 {activeWeek && (
-                    <View className="mx-6 mt-6" style={{ gap: 12 }}>
+                    <View className="px-6" style={{ gap: 14 }}>
+                        <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide">
+                            Metrics
+                        </Text>
                         <NotesField
                             label="Notes for Coach"
                             value={activeWeek.userNotesForCoach}
@@ -232,7 +251,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         {activeWeek.coachNotesForUser != null && (
                             <NotesField label="Coach Notes" value={activeWeek.coachNotesForUser} />
                         )}
-                        <View className="flex-row" style={{ gap: 12 }}>
+                        <View className="flex-row" style={{ gap: 10 }}>
                             <View className="flex-1">
                                 <Pressable
                                     onPress={() =>
@@ -241,14 +260,21 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                             existing: activeWeek.fatigueIndex,
                                         })
                                     }
-                                    className="bg-surface-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-80"
+                                    className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
                                     accessibilityRole="button"
                                     accessibilityLabel="Fatigue Index"
                                 >
-                                    <Text className="text-label text-[13px] font-medium">
-                                        Fatigue Index
-                                    </Text>
-                                    <Ionicons name="chevron-forward" size={14} color="#8E8E93" />
+                                    <View className="flex-row items-center" style={{ gap: 6 }}>
+                                        <Ionicons
+                                            name="speedometer-outline"
+                                            size={16}
+                                            color="#8E8E93"
+                                        />
+                                        <Text className="text-label text-[14px] font-medium">
+                                            Fatigue Index
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={14} color="#636366" />
                                 </Pressable>
                             </View>
                             <View className="flex-1">
@@ -259,14 +285,17 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                             existing: activeWeek.weeklyCheckIn,
                                         })
                                     }
-                                    className="bg-surface-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-80"
+                                    className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
                                     accessibilityRole="button"
                                     accessibilityLabel="Weekly Check-In"
                                 >
-                                    <Text className="text-label text-[13px] font-medium">
-                                        Check-In
-                                    </Text>
-                                    <Ionicons name="chevron-forward" size={14} color="#8E8E93" />
+                                    <View className="flex-row items-center" style={{ gap: 6 }}>
+                                        <Ionicons name="scale-outline" size={16} color="#8E8E93" />
+                                        <Text className="text-label text-[14px] font-medium">
+                                            Check-In
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={14} color="#636366" />
                                 </Pressable>
                             </View>
                         </View>
@@ -279,34 +308,30 @@ export default function ProgramScreen({ navigation, route }: Props) {
 
 function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
     return (
-        <View className="mt-6">
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24 }}
-            >
-                <View>
-                    <View className="bg-surface-secondary rounded-xl overflow-hidden">
-                        <View className="flex-row items-center px-4 py-3 border-b border-[#38383A]">
-                            <TableHeader label="Exercise" className="w-[140px]" />
-                            <TableHeader label="Sets" className="w-[80px] text-center" />
-                            <TableHeader label="RPE" className="w-[52px] text-center" />
-                            <TableHeader label="Load" className="w-[68px] text-center mr-4" />
-                            <TableHeader label="Actual" className="w-[64px] text-center" />
-                            <TableHeader label="RPE" className="w-[52px] text-center ml-3" />
-                        </View>
-
-                        {exercises.map((exercise, i) => (
-                            <ExerciseRow
-                                key={exercise.id}
-                                exercise={exercise}
-                                isLast={i === exercises.length - 1}
-                            />
-                        ))}
-                    </View>
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 24 }}
+        >
+            <View className="bg-surface-secondary rounded-xl overflow-hidden">
+                <View className="flex-row items-center px-4 py-3 border-b border-[#38383A]">
+                    <TableHeader label="Exercise" className="w-[140px]" />
+                    <TableHeader label="Sets" className="w-[80px] text-center" />
+                    <TableHeader label="RPE" className="w-[52px] text-center" />
+                    <TableHeader label="Load" className="w-[68px] text-center mr-4" />
+                    <TableHeader label="Actual" className="w-[64px] text-center" />
+                    <TableHeader label="RPE" className="w-[52px] text-center ml-3" />
                 </View>
-            </ScrollView>
-        </View>
+
+                {exercises.map((exercise, i) => (
+                    <ExerciseRow
+                        key={exercise.id}
+                        exercise={exercise}
+                        isLast={i === exercises.length - 1}
+                    />
+                ))}
+            </View>
+        </ScrollView>
     )
 }
 
@@ -413,6 +438,7 @@ function NotesField({
             <Text className="text-label-tertiary text-[11px] font-semibold uppercase tracking-wide mb-2">
                 {label}
             </Text>
+
             {editable ? (
                 <View>
                     <TextInput
@@ -463,19 +489,19 @@ function DropdownTrigger({
     return (
         <Pressable
             onPress={onPress}
-            className="bg-surface-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-80"
+            className="bg-surface-secondary rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
             accessibilityState={{ expanded: isOpen }}
         >
-            <Text className="text-label text-[13px] font-medium" numberOfLines={1}>
+            <Text className="text-label text-[14px] font-medium" numberOfLines={1}>
                 {label}
             </Text>
             <Ionicons
                 name={isOpen ? 'chevron-up' : 'chevron-down'}
-                size={14}
-                color="#8E8E93"
-                style={{ marginLeft: 4 }}
+                size={15}
+                color="#636366"
+                style={{ marginLeft: 6 }}
             />
         </Pressable>
     )
