@@ -1,9 +1,13 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { captureRef } from 'react-native-view-shot'
+
+import { ShareSheet } from '../components/ShareSheet'
+import { Toast } from '../components/Toast'
 
 import { apiGet, apiPatch, type ExerciseData, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
@@ -26,6 +30,24 @@ export default function ProgramScreen({ navigation, route }: Props) {
     const selectWeek = useProgramStore((s) => s.selectWeek)
     const selectDay = useProgramStore((s) => s.selectDay)
     const [openDropdown, setOpenDropdown] = useState<'week' | 'day' | null>(null)
+    const [shareVisible, setShareVisible] = useState(false)
+    const [capturedUri, setCapturedUri] = useState<string | null>(null)
+    const [toastVisible, setToastVisible] = useState(false)
+    const tableRef = useRef<View>(null)
+
+    const handleCapture = useCallback(async () => {
+        if (!tableRef.current) return
+        try {
+            const uri = await captureRef(tableRef.current, {
+                format: 'png',
+                quality: 1,
+            })
+            setCapturedUri(uri)
+            setShareVisible(true)
+        } catch {
+            // silently fail
+        }
+    }, [])
 
     useFocusEffect(
         useCallback(() => {
@@ -258,7 +280,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         >
                             Exercises
                         </Text>
-                        <ExerciseTable exercises={exercises} />
+                        <ExerciseTable exercises={exercises} captureRef={tableRef} onLongPress={handleCapture} />
                     </View>
                 )}
 
@@ -350,11 +372,29 @@ export default function ProgramScreen({ navigation, route }: Props) {
                     </View>
                 )}
             </ScrollView>
+            <ShareSheet
+                visible={shareVisible}
+                imageUri={capturedUri}
+                onClose={() => {
+                    setShareVisible(false)
+                    setCapturedUri(null)
+                }}
+                onSaved={() => {
+                    setShareVisible(false)
+                    setCapturedUri(null)
+                    setToastVisible(true)
+                }}
+            />
+            <Toast
+                visible={toastVisible}
+                message="Saved to Photos"
+                onDone={() => setToastVisible(false)}
+            />
         </SafeAreaView>
     )
 }
 
-function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
+function ExerciseTable({ exercises, captureRef, onLongPress }: { exercises: ExerciseData[]; captureRef?: React.RefObject<View | null>; onLongPress?: () => void }) {
     const c = useActiveTheme().colors
 
     return (
@@ -363,9 +403,11 @@ function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 24 }}
         >
-            <View
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: c.surfaceSecondary }}
+            <Pressable onLongPress={onLongPress}>
+                <View
+                    ref={captureRef}
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: c.surfaceSecondary }}
             >
                 <View
                     className="flex-row items-center px-4 py-3"
@@ -387,6 +429,7 @@ function ExerciseTable({ exercises }: { exercises: ExerciseData[] }) {
                     />
                 ))}
             </View>
+            </Pressable>
         </ScrollView>
     )
 }
