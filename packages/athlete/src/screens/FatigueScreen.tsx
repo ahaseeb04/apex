@@ -24,6 +24,7 @@ const labels: Record<string, string> = {
 }
 
 const keys = Object.keys(labels)
+const defaultValues = Object.fromEntries(keys.map((k) => [k, 0]))
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Fatigue'>
 
@@ -31,7 +32,7 @@ export default function FatigueScreen({ navigation, route }: Props) {
     const { weekId, existing } = route.params
     const theme = useActiveTheme()
     const c = theme.colors
-    const [values, setValues] = useState<Record<string, number>>(existing ?? {})
+    const [values, setValues] = useState<Record<string, number>>(existing ?? defaultValues)
     const [saving, setSaving] = useState(false)
     const { showToast } = useToast()
 
