@@ -50,6 +50,22 @@ export default function SettingsScreen({ navigation }: Props) {
                     <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
                 </Pressable>
 
+                <Pressable
+                    onPress={() => navigation.navigate('ChangePassword')}
+                    className="mx-6 mt-6 rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                    style={{ backgroundColor: c.surfaceSecondary }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Change password"
+                >
+                    <View className="flex-row items-center" style={{ gap: 10 }}>
+                        <Ionicons name="lock-closed-outline" size={20} color={c.accent} />
+                        <Text className="text-[15px] font-medium" style={{ color: c.label }}>
+                            Change Password
+                        </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
+                </Pressable>
+
                 <View
                     className="mx-6 mt-6 rounded-xl px-4 py-3"
                     style={{ backgroundColor: c.surfaceSecondary }}

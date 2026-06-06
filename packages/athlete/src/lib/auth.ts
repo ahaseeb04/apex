@@ -25,6 +25,12 @@ export async function signUp(email: string, password: string, username: string) 
     return data
 }
 
+export async function changePassword(currentPassword: string, newPassword: string) {
+    const token = await getStoredToken()
+    if (!token) throw new Error('Not authenticated')
+    await apiPost('/api/auth/change-password', { currentPassword, newPassword }, token)
+}
+
 export async function signOut() {
     await SecureStore.deleteItemAsync(TOKEN_KEY)
     await SecureStore.deleteItemAsync(USER_KEY)

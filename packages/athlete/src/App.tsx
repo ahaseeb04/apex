@@ -19,6 +19,7 @@ import HomeScreen from './screens/HomeScreen'
 import ProgramScreen from './screens/ProgramScreen'
 import SettingsScreen from './screens/SettingsScreen'
 import AppearanceScreen from './screens/AppearanceScreen'
+import ChangePasswordScreen from './screens/ChangePasswordScreen'
 import SignInScreen from './screens/SignInScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import { ToastProvider } from './hooks/use-toast'
@@ -85,6 +86,7 @@ function SettingsStackScreen() {
         >
             <SettingsStack.Screen name="SettingsList" component={SettingsScreen} />
             <SettingsStack.Screen name="Appearance" component={AppearanceScreen} />
+            <SettingsStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         </SettingsStack.Navigator>
     )
 }

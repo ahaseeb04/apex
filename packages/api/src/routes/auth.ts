@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 import { prisma } from '../lib/prisma'
+import { type AuthenticatedRequest, requireAuth } from '../middleware/auth'
 
 export const authRouter = Router()
 
@@ -48,6 +49,42 @@ authRouter.post('/signup', async (req, res) => {
         token,
         user: { id: user.id, email: user.email, username: user.username },
     })
+})
+
+const changePasswordSchema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(6),
+})
+
+authRouter.post('/change-password', requireAuth, async (req, res) => {
+    const { userId } = req as unknown as AuthenticatedRequest
+
+    const parsed = changePasswordSchema.safeParse(req.body)
+    if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.flatten().fieldErrors })
+        return
+    }
+
+    const { currentPassword, newPassword } = parsed.data
+
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+        res.status(404).json({ error: 'user not found' })
+        return
+    }
+
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+        res.status(401).json({ error: 'current password is incorrect' })
+        return
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10)
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashed },
+    })
+
+    res.json({ message: 'password changed' })
 })
 
 authRouter.post('/signin', async (req, res) => {

@@ -15,6 +15,7 @@ export type MainTabParamList = {
 export type SettingsStackParamList = {
     SettingsList: undefined
     Appearance: undefined
+    ChangePassword: undefined
 }
 
 export type RootStackParamList = {
