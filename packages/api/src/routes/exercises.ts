@@ -23,10 +23,10 @@ exerciseRouter.patch('/:id', requireAuth, async (req, res) => {
 
     const exercise = await prisma.exercise.findUnique({
         where: { id },
-        select: { day: { select: { week: { select: { block: { select: { program: { select: { userId: true } } } } } } } } },
+        select: { userId: true },
     })
 
-    if (!exercise || exercise.day.week.block.program.userId !== (req as AuthenticatedRequest).userId) {
+    if (!exercise || exercise.userId !== (req as AuthenticatedRequest).userId) {
         res.status(404).json({ error: 'exercise not found' })
         return
     }

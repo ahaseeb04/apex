@@ -44,10 +44,10 @@ weekRouter.patch('/:id', requireAuth, async (req, res) => {
 
     const week = await prisma.week.findUnique({
         where: { id },
-        select: { block: { select: { program: { select: { userId: true } } } } },
+        select: { userId: true },
     })
 
-    if (!week || week.block.program.userId !== (req as AuthenticatedRequest).userId) {
+    if (!week || week.userId !== (req as AuthenticatedRequest).userId) {
         res.status(404).json({ error: 'week not found' })
         return
     }

@@ -50,9 +50,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('updates loadActual', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'user-1' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.exercise.update.mockResolvedValue(exercise({ loadActual: 100 }))
 
         const res = await request(app)
@@ -71,9 +69,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('updates rpeActual', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'user-1' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.exercise.update.mockResolvedValue(exercise({ rpeActual: 8 }))
 
         const res = await request(app)
@@ -86,9 +82,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('updates both loadActual and rpeActual', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'user-1' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.exercise.update.mockResolvedValue(exercise({ loadActual: 120, rpeActual: 8.5 }))
 
         const res = await request(app)
@@ -102,9 +96,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('sets loadActual to null', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'user-1' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.exercise.update.mockResolvedValue(exercise({ loadActual: null }))
 
         const res = await request(app)
@@ -117,9 +109,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('sets rpeActual to null', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'user-1' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.exercise.update.mockResolvedValue(exercise({ rpeActual: null }))
 
         const res = await request(app)
@@ -164,9 +154,7 @@ describe('PATCH /api/exercises/:id', () => {
     })
 
     it('returns 404 when exercise belongs to a different user', async () => {
-        prisma.exercise.findUnique.mockResolvedValue({
-            day: { week: { block: { program: { userId: 'other-user' } } } },
-        })
+        prisma.exercise.findUnique.mockResolvedValue({ userId: 'other-user' })
 
         const res = await request(app)
             .patch('/api/exercises/exercise-1')

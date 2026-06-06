@@ -50,7 +50,7 @@ describe('PATCH /api/weeks/:id', () => {
     })
 
     it('updates userNotesForCoach', async () => {
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'user-1' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.week.update.mockResolvedValue(updatedWeek({ userNotesForCoach: 'Feeling tired this week' }))
 
         const res = await request(app)
@@ -81,7 +81,7 @@ describe('PATCH /api/weeks/:id', () => {
             soreness: 3,
         }
 
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'user-1' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.week.update.mockResolvedValue(updatedWeek({ fatigueIndex }))
 
         const res = await request(app)
@@ -96,7 +96,7 @@ describe('PATCH /api/weeks/:id', () => {
     it('updates weeklyCheckIn', async () => {
         const weeklyCheckIn = { bodyweight: 82.5, calories: 2800, sleep_hours: 7.5 }
 
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'user-1' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.week.update.mockResolvedValue(updatedWeek({ weeklyCheckIn }))
 
         const res = await request(app)
@@ -123,7 +123,7 @@ describe('PATCH /api/weeks/:id', () => {
         const weeklyCheckIn = { bodyweight: 82.5, calories: 2800, sleep_hours: 7.5 }
         const userNotesForCoach = 'Great week'
 
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'user-1' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.week.update.mockResolvedValue(
             updatedWeek({ fatigueIndex, weeklyCheckIn, userNotesForCoach }),
         )
@@ -140,7 +140,7 @@ describe('PATCH /api/weeks/:id', () => {
     })
 
     it('sets userNotesForCoach to null', async () => {
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'user-1' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'user-1' })
         prisma.week.update.mockResolvedValue(updatedWeek({ userNotesForCoach: null }))
 
         const res = await request(app)
@@ -185,7 +185,7 @@ describe('PATCH /api/weeks/:id', () => {
     })
 
     it('returns 404 when week belongs to a different user', async () => {
-        prisma.week.findUnique.mockResolvedValue({ block: { program: { userId: 'other-user' } } })
+        prisma.week.findUnique.mockResolvedValue({ userId: 'other-user' })
 
         const res = await request(app)
             .patch('/api/weeks/week-1')

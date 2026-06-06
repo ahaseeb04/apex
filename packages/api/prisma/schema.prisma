@@ -7,13 +7,17 @@ datasource db {
 }
 
 model User {
-    id        String    @id @default(uuid())
-    email     String    @unique
+    id        String     @id @default(uuid())
+    email     String     @unique
     password  String
-    username  String    @unique
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    username  String     @unique
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
     programs  Program[]
+    blocks    Block[]
+    weeks     Week[]
+    days      Day[]
+    exercises Exercise[]
 }
 
 model Program {
@@ -31,6 +35,8 @@ model Block {
     id        String   @id @default(uuid())
     programId String
     program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
     name      String
     order     Int
     createdAt DateTime @default(now())
@@ -42,6 +48,8 @@ model Week {
     id                String   @id @default(uuid())
     blockId           String
     block             Block    @relation(fields: [blockId], references: [id], onDelete: Cascade)
+    userId            String
+    user              User     @relation(fields: [userId], references: [id])
     weekNumber        Int
     fatigueIndex      Json?
     weeklyCheckIn     Json?
@@ -56,6 +64,8 @@ model Day {
     id        String     @id @default(uuid())
     weekId    String
     week      Week       @relation(fields: [weekId], references: [id], onDelete: Cascade)
+    userId    String
+    user      User       @relation(fields: [userId], references: [id])
     dayNumber Int
     createdAt DateTime   @default(now())
     updatedAt DateTime   @updatedAt
@@ -66,6 +76,8 @@ model Exercise {
     id          String   @id @default(uuid())
     dayId       String
     day         Day      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+    userId      String
+    user        User     @relation(fields: [userId], references: [id])
     name        String
     sets        Int
     reps        Int

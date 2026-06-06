@@ -11,62 +11,68 @@ async function main() {
             email: 'abdul@gmail.com',
             password,
             username: 'abdul',
-            programs: {
-                create: {
-                    name: '2026 Off-Season Base Building',
-                    description:
-                        'A 4-block off-season program focused on hypertrophy, strength, and peaking for a powerlifting meet.',
-                    blocks: {
-                        create: [
-                            {
-                                name: 'Hypertrophy Block',
-                                order: 1,
-                                weeks: {
-                                    create: [
-                                        seedWeek(1, 0, { notes: false, checkIn: true }),
-                                        seedWeek(2, 0, { notes: true, checkIn: false }),
-                                        seedWeek(3, 0, { notes: false, checkIn: false }),
-                                        seedWeek(4, 0, { notes: true, checkIn: true }),
-                                    ],
-                                },
-                            },
-                            {
-                                name: 'Strength Block',
-                                order: 2,
-                                weeks: {
-                                    create: [
-                                        seedWeek(5, 1, { notes: false, checkIn: false }),
-                                        seedWeek(6, 1, { notes: true, checkIn: true }),
-                                        seedWeek(7, 1, { notes: false, checkIn: false }),
-                                        seedWeek(8, 1, { notes: false, checkIn: true }),
-                                    ],
-                                },
-                            },
-                            {
-                                name: 'Peaking Block',
-                                order: 3,
-                                weeks: {
-                                    create: [
-                                        seedWeek(9, 2, { notes: false, checkIn: false }),
-                                        seedWeek(10, 2, { notes: true, checkIn: true }),
-                                        seedWeek(11, 2, { notes: false, checkIn: false }),
-                                        seedWeek(12, 2, { notes: false, checkIn: true }),
-                                    ],
-                                },
-                            },
-                            {
-                                name: 'Deload & Test',
-                                order: 4,
-                                weeks: {
-                                    create: [seedWeek(13, 3, { notes: false, checkIn: false })],
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
         },
     })
+
+    const program = await prisma.program.create({
+        data: {
+            name: '2026 Off-Season Base Building',
+            description:
+                'A 4-block off-season program focused on hypertrophy, strength, and peaking for a powerlifting meet.',
+            userId: user.id,
+        },
+    })
+
+    const blocksConfig = [
+        {
+            name: 'Hypertrophy Block', order: 1, phase: 0 as Phase,
+            weeks: [
+                { weekNumber: 1, notes: false, checkIn: true },
+                { weekNumber: 2, notes: true, checkIn: false },
+                { weekNumber: 3, notes: false, checkIn: false },
+                { weekNumber: 4, notes: true, checkIn: true },
+            ],
+        },
+        {
+            name: 'Strength Block', order: 2, phase: 1 as Phase,
+            weeks: [
+                { weekNumber: 5, notes: false, checkIn: false },
+                { weekNumber: 6, notes: true, checkIn: true },
+                { weekNumber: 7, notes: false, checkIn: false },
+                { weekNumber: 8, notes: false, checkIn: true },
+            ],
+        },
+        {
+            name: 'Peaking Block', order: 3, phase: 2 as Phase,
+            weeks: [
+                { weekNumber: 9, notes: false, checkIn: false },
+                { weekNumber: 10, notes: true, checkIn: true },
+                { weekNumber: 11, notes: false, checkIn: false },
+                { weekNumber: 12, notes: false, checkIn: true },
+            ],
+        },
+        {
+            name: 'Deload & Test', order: 4, phase: 3 as Phase,
+            weeks: [
+                { weekNumber: 13, notes: false, checkIn: false },
+            ],
+        },
+    ]
+
+    for (const blockCfg of blocksConfig) {
+        const block = await prisma.block.create({
+            data: {
+                name: blockCfg.name,
+                order: blockCfg.order,
+                programId: program.id,
+                userId: user.id,
+            },
+        })
+
+        for (const weekCfg of blockCfg.weeks) {
+            await seedWeek(block.id, user.id, weekCfg.weekNumber, blockCfg.phase, weekCfg)
+        }
+    }
 
     console.log(`Seeded user: ${user.email} (password: password123)`)
     console.log(`Seeded program: ${'2026 Off-Season Base Building'}`)
@@ -75,40 +81,47 @@ async function main() {
 type Phase = 0 | 1 | 2 | 3
 type WeekOptions = { notes: boolean; checkIn: boolean }
 
-function seedWeek(weekNumber: number, phase: Phase, opts: WeekOptions) {
-    return {
-        weekNumber,
-        fatigueIndex: opts.checkIn
-            ? {
-                  sleep_quality: 4,
-                  cognitive_capacity: 3,
-                  general_motivation: 4,
-                  motivation_to_train: 5,
-                  sense_of_wellbeing: 3,
-                  perceived_stress: 2,
-                  energy_levels: 3,
-                  libido: 3,
-                  soreness: 4,
-              }
-            : undefined,
-        weeklyCheckIn: opts.checkIn
-            ? { bodyweight: 92.5, calories: 3800, sleep_hours: 7.5 }
-            : undefined,
-        userNotesForCoach: opts.notes
-            ? 'Lower back feels tight on deadlift lockout. Might need extra recovery work.'
-            : undefined,
-        coachNotesForUser: opts.notes
-            ? 'Add 10min of glute activation before squat sessions. Consider dropping deficit deadlift this block.'
-            : undefined,
-        days: {
-            create: [
-                seedDay(1, 'squat', phase, weekNumber),
-                seedDay(2, 'bench', phase, weekNumber),
-                seedDay(3, 'deadlift', phase, weekNumber),
-                seedDay(4, 'accessory', phase, weekNumber),
-            ],
+async function seedWeek(
+    blockId: string,
+    userId: string,
+    weekNumber: number,
+    phase: Phase,
+    opts: WeekOptions,
+) {
+    const week = await prisma.week.create({
+        data: {
+            blockId,
+            userId,
+            weekNumber,
+            fatigueIndex: opts.checkIn
+                ? {
+                      sleep_quality: 4,
+                      cognitive_capacity: 3,
+                      general_motivation: 4,
+                      motivation_to_train: 5,
+                      sense_of_wellbeing: 3,
+                      perceived_stress: 2,
+                      energy_levels: 3,
+                      libido: 3,
+                      soreness: 4,
+                  }
+                : undefined,
+            weeklyCheckIn: opts.checkIn
+                ? { bodyweight: 92.5, calories: 3800, sleep_hours: 7.5 }
+                : undefined,
+            userNotesForCoach: opts.notes
+                ? 'Lower back feels tight on deadlift lockout. Might need extra recovery work.'
+                : undefined,
+            coachNotesForUser: opts.notes
+                ? 'Add 10min of glute activation before squat sessions. Consider dropping deficit deadlift this block.'
+                : undefined,
         },
-    }
+    })
+
+    await seedDay(week.id, userId, 1, 'squat', phase, weekNumber)
+    await seedDay(week.id, userId, 2, 'bench', phase, weekNumber)
+    await seedDay(week.id, userId, 3, 'deadlift', phase, weekNumber)
+    await seedDay(week.id, userId, 4, 'accessory', phase, weekNumber)
 }
 
 const HYPERTROPHY = {
@@ -233,14 +246,11 @@ interface ExerciseSeed {
     loadRange?: string | null
 }
 
-interface LoggedExerciseSeed extends ExerciseSeed {
-    loadActual: number | null
-    rpeActual: number | null
-}
-
 const LOGGED_WEEKS = new Set([1, 2, 3, 4, 5])
 
-function seedDay(
+async function seedDay(
+    weekId: string,
+    userId: string,
     dayNumber: number,
     focus: keyof typeof HYPERTROPHY,
     phase: Phase,
@@ -249,35 +259,37 @@ function seedDay(
     const exercises = PHASES[phase][focus]
     const isLogged = LOGGED_WEEKS.has(weekNumber)
 
-    return {
-        dayNumber,
-        exercises: {
-            create: exercises.map((ex, i) => {
-                const base: LoggedExerciseSeed = {
-                    ...ex,
-                    loadActual: null,
-                    rpeActual: null,
-                }
+    await prisma.day.create({
+        data: {
+            weekId,
+            userId,
+            dayNumber,
+            exercises: {
+                create: exercises.map((ex, i) => {
+                    let loadActual: number | null = null
+                    let rpeActual: number | null = null
 
-                if (isLogged && !base.loadRange?.startsWith('—')) {
-                    base.loadActual = [140, 145, 150, 155, 160, 165, 170, 175][i % 8] ?? null
-                    base.rpeActual =
-                        base.expectedRpe != null ? +(base.expectedRpe + 0.5).toFixed(1) : null
-                }
+                    if (isLogged && !ex.loadRange?.startsWith('—')) {
+                        loadActual = [140, 145, 150, 155, 160, 165, 170, 175][i % 8] ?? null
+                        rpeActual =
+                            ex.expectedRpe != null ? +(ex.expectedRpe + 0.5).toFixed(1) : null
+                    }
 
-                return {
-                    name: base.name,
-                    sets: base.sets,
-                    reps: base.reps,
-                    expectedRpe: base.expectedRpe ?? null,
-                    loadRange: base.loadRange ?? null,
-                    loadActual: base.loadActual,
-                    rpeActual: base.rpeActual,
-                    order: i + 1,
-                }
-            }),
+                    return {
+                        name: ex.name,
+                        sets: ex.sets,
+                        reps: ex.reps,
+                        expectedRpe: ex.expectedRpe ?? null,
+                        loadRange: ex.loadRange ?? null,
+                        loadActual,
+                        rpeActual,
+                        order: i + 1,
+                        userId,
+                    }
+                }),
+            },
         },
-    }
+    })
 }
 
 main()
