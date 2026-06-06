@@ -2,7 +2,11 @@ import './global.css'
 
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { DarkTheme, getFocusedRouteNameFromRoute, NavigationContainer } from '@react-navigation/native'
+import {
+    DarkTheme,
+    getFocusedRouteNameFromRoute,
+    NavigationContainer,
+} from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
@@ -17,6 +21,7 @@ import SettingsScreen from './screens/SettingsScreen'
 import AppearanceScreen from './screens/AppearanceScreen'
 import SignInScreen from './screens/SignInScreen'
 import SignUpScreen from './screens/SignUpScreen'
+import { ToastProvider } from './hooks/use-toast'
 import type {
     HomeStackParamList,
     MainTabParamList,
@@ -197,12 +202,14 @@ export default function App() {
     const g = parseInt(c.label.slice(3, 5), 16)
     const b = parseInt(c.label.slice(5, 7), 16)
     const labelIsLight = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5
-    const statusBarStyle = labelIsLight ? 'light' as const : 'dark' as const
+    const statusBarStyle = labelIsLight ? ('light' as const) : ('dark' as const)
 
     return (
         <NavigationContainer theme={navigationTheme}>
-            <RootNavigator />
-            <StatusBar style={statusBarStyle} />
+            <ToastProvider>
+                <RootNavigator />
+                <StatusBar style={statusBarStyle} />
+            </ToastProvider>
         </NavigationContainer>
     )
 }

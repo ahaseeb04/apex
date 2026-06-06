@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { captureRef } from 'react-native-view-shot'
 
 import { ShareSheet } from '../components/ShareSheet'
-import { Toast } from '../components/Toast'
+import { useToast } from '../hooks/use-toast'
 
 import { apiGet, apiPatch, type ExerciseData, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
@@ -32,7 +32,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
     const [openDropdown, setOpenDropdown] = useState<'week' | 'day' | null>(null)
     const [shareVisible, setShareVisible] = useState(false)
     const [capturedUri, setCapturedUri] = useState<string | null>(null)
-    const [toastVisible, setToastVisible] = useState(false)
+    const { showToast } = useToast()
     const tableRef = useRef<View>(null)
 
     const handleCapture = useCallback(async () => {
@@ -280,7 +280,11 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         >
                             Exercises
                         </Text>
-                        <ExerciseTable exercises={exercises} captureRef={tableRef} onLongPress={handleCapture} />
+                        <ExerciseTable
+                            exercises={exercises}
+                            captureRef={tableRef}
+                            onLongPress={handleCapture}
+                        />
                     </View>
                 )}
 
@@ -382,19 +386,22 @@ export default function ProgramScreen({ navigation, route }: Props) {
                 onSaved={() => {
                     setShareVisible(false)
                     setCapturedUri(null)
-                    setToastVisible(true)
+                    showToast('Saved to Photos')
                 }}
-            />
-            <Toast
-                visible={toastVisible}
-                message="Saved to Photos"
-                onDone={() => setToastVisible(false)}
             />
         </SafeAreaView>
     )
 }
 
-function ExerciseTable({ exercises, captureRef, onLongPress }: { exercises: ExerciseData[]; captureRef?: React.RefObject<View | null>; onLongPress?: () => void }) {
+function ExerciseTable({
+    exercises,
+    captureRef,
+    onLongPress,
+}: {
+    exercises: ExerciseData[]
+    captureRef?: React.RefObject<View | null>
+    onLongPress?: () => void
+}) {
     const c = useActiveTheme().colors
 
     return (
@@ -408,27 +415,27 @@ function ExerciseTable({ exercises, captureRef, onLongPress }: { exercises: Exer
                     ref={captureRef}
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: c.surfaceSecondary }}
-            >
-                <View
-                    className="flex-row items-center px-4 py-3"
-                    style={{ borderBottomWidth: 1, borderColor: c.border }}
                 >
-                    <TableHeader label="Exercise" className="w-[140px]" />
-                    <TableHeader label="Sets" className="w-[80px] text-center" />
-                    <TableHeader label="RPE" className="w-[52px] text-center" />
-                    <TableHeader label="Load" className="w-[68px] text-center mr-4" />
-                    <TableHeader label="Actual" className="w-[64px] text-center" />
-                    <TableHeader label="RPE" className="w-[52px] text-center ml-3" />
-                </View>
+                    <View
+                        className="flex-row items-center px-4 py-3"
+                        style={{ borderBottomWidth: 1, borderColor: c.border }}
+                    >
+                        <TableHeader label="Exercise" className="w-[140px]" />
+                        <TableHeader label="Sets" className="w-[80px] text-center" />
+                        <TableHeader label="RPE" className="w-[52px] text-center" />
+                        <TableHeader label="Load" className="w-[68px] text-center mr-4" />
+                        <TableHeader label="Actual" className="w-[64px] text-center" />
+                        <TableHeader label="RPE" className="w-[52px] text-center ml-3" />
+                    </View>
 
-                {exercises.map((exercise, i) => (
-                    <ExerciseRow
-                        key={exercise.id}
-                        exercise={exercise}
-                        isLast={i === exercises.length - 1}
-                    />
-                ))}
-            </View>
+                    {exercises.map((exercise, i) => (
+                        <ExerciseRow
+                            key={exercise.id}
+                            exercise={exercise}
+                            isLast={i === exercises.length - 1}
+                        />
+                    ))}
+                </View>
             </Pressable>
         </ScrollView>
     )
@@ -529,6 +536,7 @@ function NotesField({
     const c = useActiveTheme().colors
     const [text, setText] = useState(value ?? '')
     const [saving, setSaving] = useState(false)
+    const { showToast } = useToast()
 
     const handleSave = useCallback(async () => {
         if (!weekId) return
@@ -542,6 +550,7 @@ function NotesField({
                 token,
             )
         } finally {
+            showToast('Saved')
             setSaving(false)
         }
     }, [weekId, text])

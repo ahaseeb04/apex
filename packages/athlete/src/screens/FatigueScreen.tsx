@@ -9,6 +9,7 @@ import { apiPatch } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
+import { useToast } from '../hooks/use-toast'
 
 const labels: Record<string, string> = {
     sleep_quality: 'Sleep Quality',
@@ -32,6 +33,7 @@ export default function FatigueScreen({ navigation, route }: Props) {
     const c = theme.colors
     const [values, setValues] = useState<Record<string, number>>(existing ?? {})
     const [saving, setSaving] = useState(false)
+    const { showToast } = useToast()
 
     const handleSave = useCallback(async () => {
         setSaving(true)
@@ -39,13 +41,10 @@ export default function FatigueScreen({ navigation, route }: Props) {
             const token = await getStoredToken()
             if (!token) return
             const allZero = keys.every((k) => !values[k])
-            await apiPatch(
-                `/api/weeks/${weekId}`,
-                { fatigueIndex: allZero ? null : values },
-                token,
-            )
+            await apiPatch(`/api/weeks/${weekId}`, { fatigueIndex: allZero ? null : values }, token)
             navigation.goBack()
         } finally {
+            showToast('Saved')
             setSaving(false)
         }
     }, [weekId, values, navigation])
@@ -64,11 +63,7 @@ export default function FatigueScreen({ navigation, route }: Props) {
                 <Text className="text-[17px] font-semibold" style={{ color: c.label }}>
                     Fatigue Index
                 </Text>
-                <Pressable
-                    onPress={handleSave}
-                    disabled={saving}
-                    className="active:opacity-80"
-                >
+                <Pressable onPress={handleSave} disabled={saving} className="active:opacity-80">
                     <Text className="text-[17px] font-semibold" style={{ color: c.accent }}>
                         {saving ? 'Saving...' : 'Save'}
                     </Text>
@@ -85,7 +80,10 @@ export default function FatigueScreen({ navigation, route }: Props) {
                             <Text className="text-[15px] font-medium" style={{ color: c.label }}>
                                 {labels[key]}
                             </Text>
-                            <Text className="text-[15px] font-semibold w-5 text-center" style={{ color: c.accent }}>
+                            <Text
+                                className="text-[15px] font-semibold w-5 text-center"
+                                style={{ color: c.accent }}
+                            >
                                 {values[key] ?? 0}
                             </Text>
                         </View>

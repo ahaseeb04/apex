@@ -8,6 +8,7 @@ import { apiPatch } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
+import { useToast } from '../hooks/use-toast'
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Checkin'>
 
@@ -25,6 +26,7 @@ export default function CheckinScreen({ navigation, route }: Props) {
         existing?.sleep_hours != null ? String(existing.sleep_hours) : '',
     )
     const [saving, setSaving] = useState(false)
+    const { showToast } = useToast()
 
     const handleSave = useCallback(async () => {
         const bw = bodyweight.trim() ? Number(bodyweight) : null
@@ -47,6 +49,7 @@ export default function CheckinScreen({ navigation, route }: Props) {
             )
             navigation.goBack()
         } finally {
+            showToast('Saved')
             setSaving(false)
         }
     }, [weekId, bodyweight, calories, sleepHours, navigation])
@@ -65,11 +68,7 @@ export default function CheckinScreen({ navigation, route }: Props) {
                 <Text className="text-[17px] font-semibold" style={{ color: c.label }}>
                     Weekly Check-In
                 </Text>
-                <Pressable
-                    onPress={handleSave}
-                    disabled={saving}
-                    className="active:opacity-80"
-                >
+                <Pressable onPress={handleSave} disabled={saving} className="active:opacity-80">
                     <Text className="text-[17px] font-semibold" style={{ color: c.accent }}>
                         {saving ? 'Saving...' : 'Save'}
                     </Text>
@@ -78,7 +77,10 @@ export default function CheckinScreen({ navigation, route }: Props) {
 
             <View className="px-6 mt-6" style={{ gap: 20 }}>
                 <View style={{ gap: 6 }}>
-                    <Text className="text-[13px] font-medium uppercase tracking-wide ml-1" style={{ color: c.labelSecondary }}>
+                    <Text
+                        className="text-[13px] font-medium uppercase tracking-wide ml-1"
+                        style={{ color: c.labelSecondary }}
+                    >
                         Bodyweight
                     </Text>
                     <TextInput
@@ -94,7 +96,10 @@ export default function CheckinScreen({ navigation, route }: Props) {
                     />
                 </View>
                 <View style={{ gap: 6 }}>
-                    <Text className="text-[13px] font-medium uppercase tracking-wide ml-1" style={{ color: c.labelSecondary }}>
+                    <Text
+                        className="text-[13px] font-medium uppercase tracking-wide ml-1"
+                        style={{ color: c.labelSecondary }}
+                    >
                         Calories
                     </Text>
                     <TextInput
@@ -110,7 +115,10 @@ export default function CheckinScreen({ navigation, route }: Props) {
                     />
                 </View>
                 <View style={{ gap: 6 }}>
-                    <Text className="text-[13px] font-medium uppercase tracking-wide ml-1" style={{ color: c.labelSecondary }}>
+                    <Text
+                        className="text-[13px] font-medium uppercase tracking-wide ml-1"
+                        style={{ color: c.labelSecondary }}
+                    >
                         Sleep Hours
                     </Text>
                     <TextInput

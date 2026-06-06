@@ -4,7 +4,7 @@ import { prisma } from '../src/lib/prisma'
 
 async function main() {
     await prisma.user.deleteMany()
-    const password = await bcrypt.hash('password123', 10)
+    const password = await bcrypt.hash('secret', 10)
 
     const user = await prisma.user.create({
         data: {

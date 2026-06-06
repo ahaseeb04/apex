@@ -5,14 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { apiGet, ApiError, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
-import { useAuthStore } from '../stores/authStore'
 import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>
 
 export default function HomeScreen({ navigation }: Props) {
-    const signOut = useAuthStore((s) => s.signOut)
     const theme = useActiveTheme()
     const c = theme.colors
     const [programs, setPrograms] = useState<ProgramData[]>([])
@@ -48,22 +46,13 @@ export default function HomeScreen({ navigation }: Props) {
     return (
         <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <View className="flex-1 px-6">
-                <View className="flex-row items-center justify-between pt-4 pb-6">
+                <View className="pt-4 pb-6">
                     <Text
                         className="text-[34px] font-bold tracking-tight"
                         style={{ color: c.label }}
                     >
                         Programs
                     </Text>
-                    <Pressable accessibilityRole="button" accessibilityLabel="Sign Out">
-                        <Text
-                            onPress={signOut}
-                            className="text-[15px] font-medium active:opacity-80"
-                            style={{ color: c.accent }}
-                        >
-                            Sign Out
-                        </Text>
-                    </Pressable>
                 </View>
 
                 {isLoading ? (

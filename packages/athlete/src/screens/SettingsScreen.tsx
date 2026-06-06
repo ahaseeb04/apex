@@ -3,24 +3,20 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { useAuthStore } from '../stores/authStore'
 import { useActiveTheme } from '../stores/themeStore'
 import type { SettingsStackParamList } from './types'
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsList'>
 
 export default function SettingsScreen({ navigation }: Props) {
+    const signOut = useAuthStore((s) => s.signOut)
     const theme = useActiveTheme()
     const c = theme.colors
 
     return (
-        <SafeAreaView
-            className="flex-1"
-            style={{ backgroundColor: c.surface }}
-        >
-            <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ paddingBottom: 40 }}
-            >
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
                 <View className="px-6">
                     <Text
                         className="text-[34px] font-bold tracking-tight pt-4 pb-6"
@@ -43,7 +39,10 @@ export default function SettingsScreen({ navigation }: Props) {
                             <Text className="text-[15px] font-medium" style={{ color: c.label }}>
                                 Theme
                             </Text>
-                            <Text className="text-[13px] mt-0.5" style={{ color: c.labelSecondary }}>
+                            <Text
+                                className="text-[13px] mt-0.5"
+                                style={{ color: c.labelSecondary }}
+                            >
                                 {theme.name}
                             </Text>
                         </View>
@@ -67,6 +66,22 @@ export default function SettingsScreen({ navigation }: Props) {
                     >
                         Fresh v1.0
                     </Text>
+                </View>
+
+                <View className="mx-6 mt-10">
+                    <Pressable
+                        onPress={signOut}
+                        className="active:opacity-80"
+                        accessibilityRole="button"
+                        accessibilityLabel="Sign Out"
+                    >
+                        <Text
+                            className="text-[15px] text-center font-semibold"
+                            style={{ color: c.accent }}
+                        >
+                            Sign Out
+                        </Text>
+                    </Pressable>
                 </View>
             </ScrollView>
         </SafeAreaView>
