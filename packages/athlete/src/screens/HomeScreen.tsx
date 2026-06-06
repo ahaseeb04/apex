@@ -49,15 +49,18 @@ export default function HomeScreen({ navigation }: Props) {
         <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <View className="flex-1 px-6">
                 <View className="flex-row items-center justify-between pt-4 pb-6">
-                    <Text className="text-[34px] font-bold tracking-tight" style={{ color: c.label }}>
+                    <Text
+                        className="text-[34px] font-bold tracking-tight"
+                        style={{ color: c.label }}
+                    >
                         Programs
                     </Text>
-                    <Pressable
-                        onPress={signOut}
-                        accessibilityRole="button"
-                        accessibilityLabel="Sign Out"
-                    >
-                        <Text className="text-[15px] font-medium active:opacity-80" style={{ color: c.accent }}>
+                    <Pressable accessibilityRole="button" accessibilityLabel="Sign Out">
+                        <Text
+                            onPress={signOut}
+                            className="text-[15px] font-medium active:opacity-80"
+                            style={{ color: c.accent }}
+                        >
                             Sign Out
                         </Text>
                     </Pressable>
@@ -69,14 +72,18 @@ export default function HomeScreen({ navigation }: Props) {
                     </View>
                 ) : error ? (
                     <View className="flex-1 items-center justify-center px-4">
-                        <Text className="text-[15px] text-center" style={{ color: c.accent }}>{error}</Text>
+                        <Text className="text-[15px] text-center" style={{ color: c.accent }}>
+                            {error}
+                        </Text>
                         <Pressable
                             className="mt-4 active:opacity-80"
                             onPress={() => loadPrograms()}
                             accessibilityRole="button"
                             accessibilityLabel="Retry loading programs"
                         >
-                            <Text className="text-[15px] font-medium" style={{ color: c.accent }}>Retry</Text>
+                            <Text className="text-[15px] font-medium" style={{ color: c.accent }}>
+                                Retry
+                            </Text>
                         </Pressable>
                     </View>
                 ) : programs.length === 0 ? (
@@ -123,10 +130,7 @@ export default function HomeScreen({ navigation }: Props) {
                                     </Text>
                                 ) : null}
                                 <View className="flex-row mt-3" style={{ gap: 16 }}>
-                                    <MetadataBadge
-                                        value={item.blocks.length}
-                                        label="Block"
-                                    />
+                                    <MetadataBadge value={item.blocks.length} label="Block" />
                                     <MetadataBadge
                                         value={item.blocks.reduce(
                                             (sum, b) => sum + b.weeks.length,
@@ -149,7 +153,9 @@ function MetadataBadge({ value, label }: { value: number; label: string }) {
 
     return (
         <View className="flex-row items-center" style={{ gap: 4 }}>
-            <Text className="text-[13px] font-medium" style={{ color: c.accent }}>{value}</Text>
+            <Text className="text-[13px] font-medium" style={{ color: c.accent }}>
+                {value}
+            </Text>
             <Text className="text-[13px]" style={{ color: c.labelTertiary }}>
                 {value === 1 ? label : `${label}s`}
             </Text>

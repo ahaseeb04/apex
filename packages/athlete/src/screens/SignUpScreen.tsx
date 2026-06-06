@@ -65,11 +65,17 @@ export default function SignUpScreen({ navigation }: Props) {
             >
                 <Pressable className="flex-1 px-6" onPress={Keyboard.dismiss}>
                     <View className="flex-1 justify-center" style={{ rowGap: 0 }}>
-                        <Text className="text-[34px] font-bold tracking-tight" style={{ color: c.label }}>
+                        <Text
+                            className="text-[34px] font-bold tracking-tight"
+                            style={{ color: c.label }}
+                        >
                             Create Account
                         </Text>
-                        <Text className="text-[17px] mb-12 mt-1" style={{ color: c.labelSecondary }}>
-                            Join PeakPound today
+                        <Text
+                            className="text-[17px] mb-12 mt-1"
+                            style={{ color: c.labelSecondary }}
+                        >
+                            Join Conspiracy Barbell today
                         </Text>
 
                         <View style={{ rowGap: 20 }}>
@@ -97,7 +103,10 @@ export default function SignUpScreen({ navigation }: Props) {
                         </View>
 
                         {error ? (
-                            <Text className="text-[15px] mt-4 text-center" style={{ color: c.accent }}>
+                            <Text
+                                className="text-[15px] mt-4 text-center"
+                                style={{ color: c.accent }}
+                            >
                                 {error}
                             </Text>
                         ) : null}
@@ -113,7 +122,10 @@ export default function SignUpScreen({ navigation }: Props) {
                             {loading ? (
                                 <ActivityIndicator color={c.surface} size="small" />
                             ) : (
-                                <Text className="text-center font-semibold text-[17px] tracking-tight" style={{ color: c.label }}>
+                                <Text
+                                    className="text-center font-semibold text-[17px] tracking-tight"
+                                    style={{ color: c.label }}
+                                >
                                     Create Account
                                 </Text>
                             )}
@@ -128,7 +140,10 @@ export default function SignUpScreen({ navigation }: Props) {
                                 accessibilityRole="button"
                                 accessibilityLabel="Sign In"
                             >
-                                <Text className="font-semibold text-[15px]" style={{ color: c.accent }}>
+                                <Text
+                                    className="font-semibold text-[15px]"
+                                    style={{ color: c.accent }}
+                                >
                                     Sign In
                                 </Text>
                             </Pressable>

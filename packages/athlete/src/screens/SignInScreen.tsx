@@ -59,11 +59,17 @@ export default function SignInScreen({ navigation }: Props) {
             >
                 <Pressable className="flex-1 px-6" onPress={Keyboard.dismiss}>
                     <View className="flex-1 justify-center" style={{ rowGap: 0 }}>
-                        <Text className="text-[34px] font-bold tracking-tight" style={{ color: c.label }}>
+                        <Text
+                            className="text-[34px] font-bold tracking-tight"
+                            style={{ color: c.label }}
+                        >
                             Sign In
                         </Text>
-                        <Text className="text-[17px] mb-12 mt-1" style={{ color: c.labelSecondary }}>
-                            Welcome back to PeakPound
+                        <Text
+                            className="text-[17px] mb-12 mt-1"
+                            style={{ color: c.labelSecondary }}
+                        >
+                            Welcome back to Conspiracy Barbell
                         </Text>
 
                         <View style={{ rowGap: 20 }}>
@@ -84,7 +90,10 @@ export default function SignInScreen({ navigation }: Props) {
                         </View>
 
                         {error ? (
-                            <Text className="text-[15px] mt-4 text-center" style={{ color: c.accent }}>
+                            <Text
+                                className="text-[15px] mt-4 text-center"
+                                style={{ color: c.accent }}
+                            >
                                 {error}
                             </Text>
                         ) : null}
@@ -100,7 +109,10 @@ export default function SignInScreen({ navigation }: Props) {
                             {loading ? (
                                 <ActivityIndicator color={c.surface} size="small" />
                             ) : (
-                                <Text className="text-center font-semibold text-[17px] tracking-tight" style={{ color: c.label }}>
+                                <Text
+                                    className="text-center font-semibold text-[17px] tracking-tight"
+                                    style={{ color: c.label }}
+                                >
                                     Sign In
                                 </Text>
                             )}
@@ -115,7 +127,10 @@ export default function SignInScreen({ navigation }: Props) {
                                 accessibilityRole="button"
                                 accessibilityLabel="Sign Up"
                             >
-                                <Text className="font-semibold text-[15px]" style={{ color: c.accent }}>
+                                <Text
+                                    className="font-semibold text-[15px]"
+                                    style={{ color: c.accent }}
+                                >
                                     Sign Up
                                 </Text>
                             </Pressable>
