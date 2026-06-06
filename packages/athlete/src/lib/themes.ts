@@ -20,6 +20,12 @@ export interface Theme {
     colors: ThemeColors
 }
 
+const sharedColors = {
+    success: '#34C759',
+    error: '#FF3B30',
+    info: '#5AC8FA',
+} as const satisfies Partial<ThemeColors>
+
 export const themes: Theme[] = [
     {
         id: 'midnight',
@@ -32,12 +38,10 @@ export const themes: Theme[] = [
             labelSecondary: '#8E8E93',
             labelTertiary: '#636366',
             accent: '#0A84FF',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#38383A',
             tabBar: '#0D0D0D',
             tabBarBorder: '#2C2C2E',
+            ...sharedColors,
         },
     },
     {
@@ -51,12 +55,10 @@ export const themes: Theme[] = [
             labelSecondary: '#8E8E93',
             labelTertiary: '#636366',
             accent: '#FF375F',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#38383A',
             tabBar: '#0D0D0D',
             tabBarBorder: '#2C2C2E',
+            ...sharedColors,
         },
     },
     {
@@ -70,12 +72,10 @@ export const themes: Theme[] = [
             labelSecondary: '#8899B4',
             labelTertiary: '#5C6E8A',
             accent: '#0096FF',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#1E3A5F',
             tabBar: '#0C1A30',
             tabBarBorder: '#1A3356',
+            ...sharedColors,
         },
     },
     {
@@ -89,12 +89,10 @@ export const themes: Theme[] = [
             labelSecondary: '#98989D',
             labelTertiary: '#6C6C70',
             accent: '#98989D',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#38383A',
             tabBar: '#141416',
             tabBarBorder: '#2E2E30',
+            ...sharedColors,
         },
     },
     {
@@ -108,12 +106,10 @@ export const themes: Theme[] = [
             labelSecondary: '#88AAAA',
             labelTertiary: '#5C7A7A',
             accent: '#12A3E2',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#204040',
             tabBar: '#0C1F1F',
             tabBarBorder: '#1E3A3A',
+            ...sharedColors,
         },
     },
     {
@@ -127,12 +123,10 @@ export const themes: Theme[] = [
             labelSecondary: '#5A7184',
             labelTertiary: '#8FA3B1',
             accent: '#0077B6',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#C8D8E4',
             tabBar: '#E4EEF5',
             tabBarBorder: '#C8D8E4',
+            ...sharedColors,
         },
     },
     {
@@ -146,12 +140,10 @@ export const themes: Theme[] = [
             labelSecondary: '#B5BAC1',
             labelTertiary: '#949BA4',
             accent: '#5865F2',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#3F4147',
             tabBar: '#2B2D31',
             tabBarBorder: '#3F4147',
+            ...sharedColors,
         },
     },
     {
@@ -165,12 +157,10 @@ export const themes: Theme[] = [
             labelSecondary: '#9499A0',
             labelTertiary: '#6B7078',
             accent: '#FF4500',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#2D3035',
             tabBar: '#121518',
             tabBarBorder: '#272A2E',
+            ...sharedColors,
         },
     },
     {
@@ -184,12 +174,10 @@ export const themes: Theme[] = [
             labelSecondary: '#5B7D6E',
             labelTertiary: '#9AB5A8',
             accent: '#25D366',
-            success: '#34C759',
-            error: '#FF3B30',
-            info: '#5AC8FA',
             border: '#C4DCC6',
             tabBar: '#DCE8DD',
             tabBarBorder: '#C4DCC6',
+            ...sharedColors,
         },
     },
 ]
