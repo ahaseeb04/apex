@@ -59,7 +59,7 @@ export function DeleteAccountSheet({ visible, onClose, onDeleted }: DeleteAccoun
                     className="w-14 h-14 rounded-full items-center justify-center mb-3"
                     style={{ backgroundColor: c.surfaceTertiary }}
                 >
-                    <Ionicons name="alert-circle-outline" size={28} color={c.accent} />
+                    <Ionicons name="alert-circle-outline" size={28} color={c.error} />
                 </View>
                 <Text className="text-[20px] font-bold text-center" style={{ color: c.label }}>
                     Delete Account
