@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { captureRef } from 'react-native-view-shot'
@@ -34,6 +34,10 @@ export default function ProgramScreen({ navigation, route }: Props) {
     const [capturedUri, setCapturedUri] = useState<string | null>(null)
     const { showToast } = useToast()
     const tableRef = useRef<View>(null)
+    const blockScrollRef = useRef<ScrollView>(null)
+    const blockLayouts = useRef<Record<string, { x: number; width: number }>>({})
+    const blockScrollWidth = useRef(0)
+    const hasScrolledToBlock = useRef(false)
 
     const handleCapture = useCallback(async () => {
         if (!tableRef.current) return
@@ -69,6 +73,20 @@ export default function ProgramScreen({ navigation, route }: Props) {
             }
         }, [programId]),
     )
+
+    useEffect(() => {
+        if (!selectedBlockId || !program || hasScrolledToBlock.current) return
+        const blockExists = program.blocks.some((b) => b.id === selectedBlockId)
+        const blockId = blockExists ? selectedBlockId : program.blocks[0]?.id
+        if (!blockId) return
+        const layout = blockLayouts.current[blockId]
+        if (!layout || !blockScrollWidth.current) return
+        if (layout.x + layout.width > blockScrollWidth.current || layout.x < 0) {
+            const scrollX = Math.max(0, layout.x - (blockScrollWidth.current - layout.width) / 2)
+            blockScrollRef.current?.scrollTo({ x: scrollX, animated: false })
+        }
+        hasScrolledToBlock.current = true
+    }, [selectedBlockId, program])
 
     if (isLoading || !program) {
         return (
@@ -147,8 +165,12 @@ export default function ProgramScreen({ navigation, route }: Props) {
                             Block
                         </Text>
                         <ScrollView
+                            ref={blockScrollRef}
                             horizontal
                             showsHorizontalScrollIndicator={false}
+                            onLayout={(e) => {
+                                blockScrollWidth.current = e.nativeEvent.layout.width
+                            }}
                             contentContainerStyle={{
                                 paddingHorizontal: 24,
                                 gap: 8,
@@ -160,6 +182,12 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                 return (
                                     <Pressable
                                         key={block.id}
+                                        onLayout={(e) => {
+                                            blockLayouts.current[block.id] = {
+                                                x: e.nativeEvent.layout.x,
+                                                width: e.nativeEvent.layout.width,
+                                            }
+                                        }}
                                         onPress={() => {
                                             selectBlock(programId, block.id)
                                             const firstWeek = block.weeks[0]
