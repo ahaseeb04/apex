@@ -405,11 +405,7 @@ function ExerciseTable({
     const c = useActiveTheme().colors
 
     return (
-        <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 24 }}
-        >
+        <View className="px-6">
             <Pressable onLongPress={onLongPress}>
                 <View
                     ref={captureRef}
@@ -420,12 +416,12 @@ function ExerciseTable({
                         className="flex-row items-center px-4 py-3"
                         style={{ borderBottomWidth: 1, borderColor: c.border }}
                     >
-                        <TableHeader label="Exercise" className="w-[140px]" />
-                        <TableHeader label="Sets" className="w-[80px] text-center" />
-                        <TableHeader label="RPE" className="w-[52px] text-center" />
-                        <TableHeader label="Load" className="w-[68px] text-center mr-4" />
-                        <TableHeader label="Actual" className="w-[64px] text-center" />
-                        <TableHeader label="RPE" className="w-[52px] text-center ml-3" />
+                        <TableHeader label="Exercise" className="flex-1" />
+                        <TableHeader label="Sets" className="w-[48px] text-center" />
+                        <TableHeader label="RPE" className="w-[36px] text-center" />
+                        <TableHeader label="Load" className="w-[52px] text-center mr-2" />
+                        <TableHeader label="Actual" className="w-[48px] text-center" />
+                        <TableHeader label="RPE" className="w-[42px] text-center ml-2" />
                     </View>
 
                     {exercises.map((exercise, i) => (
@@ -437,7 +433,7 @@ function ExerciseTable({
                     ))}
                 </View>
             </Pressable>
-        </ScrollView>
+        </View>
     )
 }
 
@@ -446,7 +442,7 @@ function TableHeader({ label, className }: { label: string; className: string })
 
     return (
         <Text
-            className={`text-[11px] font-semibold uppercase tracking-wide ${className}`}
+            className={`text-[9px] font-semibold uppercase tracking-wide ${className}`}
             style={{ color: c.labelTertiary }}
         >
             {label}
@@ -477,27 +473,23 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
             className="flex-row items-center px-4 py-3"
             style={isLast ? undefined : { borderBottomWidth: 1, borderColor: c.border }}
         >
-            <Text
-                className="text-[15px] font-medium w-[140px]"
-                numberOfLines={1}
-                style={{ color: c.label }}
-            >
+            <Text className="text-[13px] font-medium flex-1" style={{ color: c.label }}>
                 {exercise.name}
             </Text>
-            <Text className="text-[15px] w-[80px] text-center" style={{ color: c.labelSecondary }}>
+            <Text className="text-[13px] w-[48px] text-center" style={{ color: c.labelSecondary }}>
                 {exercise.sets}×{exercise.reps}
             </Text>
-            <Text className="text-[15px] w-[52px] text-center" style={{ color: c.labelSecondary }}>
+            <Text className="text-[13px] w-[36px] text-center" style={{ color: c.labelSecondary }}>
                 {exercise.expectedRpe != null ? `@${exercise.expectedRpe}` : '—'}
             </Text>
             <Text
-                className="text-[15px] w-[68px] text-center mr-4"
+                className="text-[13px] w-[52px] text-center mr-2"
                 style={{ color: c.labelSecondary }}
             >
                 {exercise.loadRange ?? '—'}
             </Text>
             <TextInput
-                className="text-[15px] rounded-lg w-[64px] text-center py-1.5"
+                className="text-[13px] rounded-lg w-[48px] text-center py-1.5"
                 style={{ color: c.label, backgroundColor: c.surfaceTertiary }}
                 placeholder="—"
                 placeholderTextColor={c.labelTertiary}
@@ -508,7 +500,7 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
                 onEndEditing={(e) => saveExercise('loadActual', e.nativeEvent.text)}
             />
             <TextInput
-                className="text-[15px] rounded-lg w-[52px] text-center py-1.5 ml-3"
+                className="text-[13px] rounded-lg w-[42px] text-center py-1.5 ml-2"
                 style={{ color: c.label, backgroundColor: c.surfaceTertiary }}
                 placeholder="—"
                 placeholderTextColor={c.labelTertiary}
