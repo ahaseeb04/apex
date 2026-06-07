@@ -4,7 +4,13 @@ import jwt from 'jsonwebtoken'
 
 vi.mock('../../lib/prisma', () => ({
     prisma: {
-        user: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+        user: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+        exercise: { deleteMany: vi.fn() },
+        day: { deleteMany: vi.fn() },
+        week: { deleteMany: vi.fn() },
+        block: { deleteMany: vi.fn() },
+        program: { deleteMany: vi.fn() },
+        $transaction: vi.fn((ops: any) => Promise.all(ops)),
     },
 }))
 
@@ -234,6 +240,94 @@ describe('POST /api/auth/change-password', () => {
             .post('/api/auth/change-password')
             .set('Authorization', `Bearer ${token}`)
             .send({ currentPassword: 'old', newPassword: 'newpass123' })
+
+        expect(res.status).toBe(404)
+        expect(res.body.error).toBe('user not found')
+    })
+})
+
+describe('POST /api/auth/delete-account', () => {
+    let prisma: any
+    let bcryptCompare: any
+    let token: string
+
+    beforeAll(async () => {
+        prisma = (await import('../../lib/prisma')).prisma
+        bcryptCompare = (await import('bcryptjs')).default.compare
+        token = jwt.sign({ sub: 'user-1' }, 'test-secret')
+    })
+
+    it('deletes account and returns success', async () => {
+        prisma.user.findUnique.mockResolvedValue(user())
+        bcryptCompare.mockResolvedValue(true)
+        prisma.user.delete.mockResolvedValue(user())
+
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ password: 'secret123' })
+
+        expect(res.status).toBe(200)
+        expect(res.body.message).toBe('account deleted')
+        expect(prisma.$transaction).toHaveBeenCalledWith([
+            prisma.exercise.deleteMany({ where: { userId: 'user-1' } }),
+            prisma.day.deleteMany({ where: { userId: 'user-1' } }),
+            prisma.week.deleteMany({ where: { userId: 'user-1' } }),
+            prisma.block.deleteMany({ where: { userId: 'user-1' } }),
+            prisma.program.deleteMany({ where: { userId: 'user-1' } }),
+            prisma.user.delete({ where: { id: 'user-1' } }),
+        ])
+    })
+
+    it('rejects missing authorization header', async () => {
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .send({ password: 'secret123' })
+
+        expect(res.status).toBe(401)
+        expect(res.body.error).toBe('missing authorization header')
+    })
+
+    it('rejects invalid token', async () => {
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .set('Authorization', 'Bearer bad-token')
+            .send({ password: 'secret123' })
+
+        expect(res.status).toBe(401)
+        expect(res.body.error).toBe('invalid token')
+    })
+
+    it('rejects wrong password', async () => {
+        prisma.user.findUnique.mockResolvedValue(user())
+        bcryptCompare.mockResolvedValue(false)
+
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ password: 'wrong' })
+
+        expect(res.status).toBe(401)
+        expect(res.body.error).toBe('password is incorrect')
+    })
+
+    it('rejects missing password', async () => {
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .set('Authorization', `Bearer ${token}`)
+            .send({})
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBeDefined()
+    })
+
+    it('returns 404 for unknown user', async () => {
+        prisma.user.findUnique.mockResolvedValue(null)
+
+        const res = await request(app)
+            .post('/api/auth/delete-account')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ password: 'secret123' })
 
         expect(res.status).toBe(404)
         expect(res.body.error).toBe('user not found')

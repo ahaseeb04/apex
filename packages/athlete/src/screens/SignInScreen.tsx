@@ -107,7 +107,7 @@ export default function SignInScreen({ navigation }: Props) {
                             accessibilityLabel="Sign In"
                         >
                             {loading ? (
-                                <ActivityIndicator color={c.surface} size="small" />
+                                <ActivityIndicator color={c.label} size="small" />
                             ) : (
                                 <Text
                                     className="text-center font-semibold text-[17px] tracking-tight"

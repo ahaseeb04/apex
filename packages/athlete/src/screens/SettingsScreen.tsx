@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { DeleteAccountSheet } from '../components/DeleteAccountSheet'
 import { useAuthStore } from '../stores/authStore'
 import { useActiveTheme } from '../stores/themeStore'
 import type { SettingsStackParamList } from './types'
@@ -13,6 +15,7 @@ export default function SettingsScreen({ navigation }: Props) {
     const signOut = useAuthStore((s) => s.signOut)
     const theme = useActiveTheme()
     const c = theme.colors
+    const [showDeleteSheet, setShowDeleteSheet] = useState(false)
 
     return (
         <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
@@ -50,21 +53,53 @@ export default function SettingsScreen({ navigation }: Props) {
                     <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
                 </Pressable>
 
-                <Pressable
-                    onPress={() => navigation.navigate('ChangePassword')}
-                    className="mx-6 mt-6 rounded-xl px-4 py-3.5 flex-row items-center justify-between active:opacity-80"
+                <View
+                    className="mx-6 mt-6 rounded-xl px-4 py-3"
                     style={{ backgroundColor: c.surfaceSecondary }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Change password"
                 >
-                    <View className="flex-row items-center" style={{ gap: 10 }}>
-                        <Ionicons name="lock-closed-outline" size={20} color={c.accent} />
-                        <Text className="text-[15px] font-medium" style={{ color: c.label }}>
-                            Change Password
-                        </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
-                </Pressable>
+                    <Text
+                        className="text-[11px] font-semibold uppercase tracking-wide mb-1"
+                        style={{ color: c.labelTertiary }}
+                    >
+                        Account
+                    </Text>
+                    <Pressable
+                        onPress={() => navigation.navigate('ChangePassword')}
+                        className="py-2.5 active:opacity-80"
+                        accessibilityRole="button"
+                        accessibilityLabel="Change password"
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <View className="flex-row items-center" style={{ gap: 10 }}>
+                                <Ionicons name="lock-closed-outline" size={20} color={c.accent} />
+                                <Text className="text-[15px] font-medium" style={{ color: c.label }}>
+                                    Change Password
+                                </Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
+                        </View>
+                    </Pressable>
+                    <View
+                        className="h-px"
+                        style={{ backgroundColor: c.border }}
+                    />
+                    <Pressable
+                        onPress={() => setShowDeleteSheet(true)}
+                        className="py-2.5 active:opacity-80"
+                        accessibilityRole="button"
+                        accessibilityLabel="Delete account"
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <View className="flex-row items-center" style={{ gap: 10 }}>
+                                <Ionicons name="trash-outline" size={20} color={c.accent} />
+                                <Text className="text-[15px] font-medium" style={{ color: c.label }}>
+                                    Delete Account
+                                </Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
+                        </View>
+                    </Pressable>
+                </View>
 
                 <View
                     className="mx-6 mt-6 rounded-xl px-4 py-3"
@@ -100,6 +135,12 @@ export default function SettingsScreen({ navigation }: Props) {
                     </Pressable>
                 </View>
             </ScrollView>
+
+            <DeleteAccountSheet
+                visible={showDeleteSheet}
+                onClose={() => setShowDeleteSheet(false)}
+                onDeleted={() => {}}
+            />
         </SafeAreaView>
     )
 }

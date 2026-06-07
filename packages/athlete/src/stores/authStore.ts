@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import { ApiError } from '../lib/api'
 import {
+    deleteAccount as apiDeleteAccount,
     getStoredAuth,
     signIn as apiSignIn,
     signOut as apiSignOut,
@@ -17,6 +18,7 @@ interface AuthState {
     signIn: (email: string, password: string) => Promise<void>
     signUp: (email: string, password: string, username: string) => Promise<void>
     signOut: () => Promise<void>
+    deleteAccount: (password: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -46,6 +48,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     signOut: async () => {
+        await apiSignOut()
+        set({ user: null, isAuthenticated: false })
+    },
+
+    deleteAccount: async (password) => {
+        await apiDeleteAccount(password)
         await apiSignOut()
         set({ user: null, isAuthenticated: false })
     },
