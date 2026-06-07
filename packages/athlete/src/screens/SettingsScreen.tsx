@@ -8,6 +8,7 @@ import { DeleteAccountSheet } from '../components/DeleteAccountSheet'
 import { useAuthStore } from '../stores/authStore'
 import { useActiveTheme } from '../stores/themeStore'
 import type { SettingsStackParamList } from './types'
+import { useToast } from '../hooks/use-toast'
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsList'>
 
@@ -16,6 +17,7 @@ export default function SettingsScreen({ navigation }: Props) {
     const theme = useActiveTheme()
     const c = theme.colors
     const [showDeleteSheet, setShowDeleteSheet] = useState(false)
+    const { showToast } = useToast()
 
     return (
         <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
@@ -72,17 +74,17 @@ export default function SettingsScreen({ navigation }: Props) {
                         <View className="flex-row items-center justify-between">
                             <View className="flex-row items-center" style={{ gap: 10 }}>
                                 <Ionicons name="lock-closed-outline" size={20} color={c.accent} />
-                                <Text className="text-[15px] font-medium" style={{ color: c.label }}>
+                                <Text
+                                    className="text-[15px] font-medium"
+                                    style={{ color: c.label }}
+                                >
                                     Change Password
                                 </Text>
                             </View>
                             <Ionicons name="chevron-forward" size={16} color={c.labelTertiary} />
                         </View>
                     </Pressable>
-                    <View
-                        className="h-px"
-                        style={{ backgroundColor: c.border }}
-                    />
+                    <View className="h-px" style={{ backgroundColor: c.border }} />
                     <Pressable
                         onPress={() => setShowDeleteSheet(true)}
                         className="py-2.5 active:opacity-80"
@@ -92,7 +94,10 @@ export default function SettingsScreen({ navigation }: Props) {
                         <View className="flex-row items-center justify-between">
                             <View className="flex-row items-center" style={{ gap: 10 }}>
                                 <Ionicons name="trash-outline" size={20} color={c.accent} />
-                                <Text className="text-[15px] font-medium" style={{ color: c.label }}>
+                                <Text
+                                    className="text-[15px] font-medium"
+                                    style={{ color: c.label }}
+                                >
                                     Delete Account
                                 </Text>
                             </View>
@@ -115,7 +120,7 @@ export default function SettingsScreen({ navigation }: Props) {
                         className="text-[15px] leading-[22px]"
                         style={{ color: c.labelSecondary }}
                     >
-                        Fresh v1.0
+                        Conspiracy Barbell v1.0
                     </Text>
                 </View>
 
@@ -139,7 +144,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <DeleteAccountSheet
                 visible={showDeleteSheet}
                 onClose={() => setShowDeleteSheet(false)}
-                onDeleted={() => {}}
+                onDeleted={() => showToast('Account removed. No trace left behind', 'info')}
             />
         </SafeAreaView>
     )

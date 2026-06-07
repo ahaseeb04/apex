@@ -92,7 +92,7 @@ export default function SignInScreen({ navigation }: Props) {
                         {error ? (
                             <Text
                                 className="text-[15px] mt-4 text-center"
-                                style={{ color: c.accent }}
+                                style={{ color: c.error }}
                             >
                                 {error}
                             </Text>

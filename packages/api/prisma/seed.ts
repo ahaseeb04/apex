@@ -25,7 +25,9 @@ async function main() {
 
     const blocksConfig = [
         {
-            name: 'Hypertrophy Block', order: 1, phase: 0 as Phase,
+            name: 'Hypertrophy Block',
+            order: 1,
+            phase: 0 as Phase,
             weeks: [
                 { weekNumber: 1, notes: false, checkIn: true },
                 { weekNumber: 2, notes: true, checkIn: false },
@@ -34,7 +36,9 @@ async function main() {
             ],
         },
         {
-            name: 'Strength Block', order: 2, phase: 1 as Phase,
+            name: 'Strength Block',
+            order: 2,
+            phase: 1 as Phase,
             weeks: [
                 { weekNumber: 5, notes: false, checkIn: false },
                 { weekNumber: 6, notes: true, checkIn: true },
@@ -43,7 +47,9 @@ async function main() {
             ],
         },
         {
-            name: 'Peaking Block', order: 3, phase: 2 as Phase,
+            name: 'Peaking Block',
+            order: 3,
+            phase: 2 as Phase,
             weeks: [
                 { weekNumber: 9, notes: false, checkIn: false },
                 { weekNumber: 10, notes: true, checkIn: true },
@@ -52,10 +58,10 @@ async function main() {
             ],
         },
         {
-            name: 'Deload & Test', order: 4, phase: 3 as Phase,
-            weeks: [
-                { weekNumber: 13, notes: false, checkIn: false },
-            ],
+            name: 'Deload & Test',
+            order: 4,
+            phase: 3 as Phase,
+            weeks: [{ weekNumber: 13, notes: false, checkIn: false }],
         },
     ]
 
@@ -74,7 +80,7 @@ async function main() {
         }
     }
 
-    console.log(`Seeded user: ${user.email} (password: password123)`)
+    console.log(`Seeded user: ${user.email} (password: secret)`)
     console.log(`Seeded program: ${'2026 Off-Season Base Building'}`)
 }
 
