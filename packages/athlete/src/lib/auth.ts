@@ -9,6 +9,7 @@ export interface AuthUser {
     id: string
     email: string
     username: string
+    role: string
 }
 
 export async function signIn(email: string, password: string) {

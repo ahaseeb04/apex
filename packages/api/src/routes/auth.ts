@@ -34,7 +34,7 @@ authRouter.post('/signin', async (req, res) => {
 
     res.json({
         token,
-        user: { id: user.id, email: user.email, username: user.username },
+        user: { id: user.id, email: user.email, username: user.username, role: user.role },
     })
 })
 
@@ -42,6 +42,7 @@ const signupSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
     username: z.string().min(2),
+    role: z.enum(['athlete', 'coach']).default('athlete'),
 })
 
 authRouter.post('/signup', async (req, res) => {
@@ -51,7 +52,7 @@ authRouter.post('/signup', async (req, res) => {
         return
     }
 
-    const { email, password, username } = parsed.data
+    const { email, password, username, role } = parsed.data
 
     const existing = await prisma.user.findFirst({
         where: { OR: [{ email }, { username }] },
@@ -63,7 +64,7 @@ authRouter.post('/signup', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
-        data: { email, password: hashed, username },
+        data: { email, password: hashed, username, role },
     })
 
     const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET!, {
@@ -72,7 +73,7 @@ authRouter.post('/signup', async (req, res) => {
 
     res.status(201).json({
         token,
-        user: { id: user.id, email: user.email, username: user.username },
+        user: { id: user.id, email: user.email, username: user.username, role: user.role },
     })
 })
 

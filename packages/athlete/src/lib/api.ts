@@ -120,5 +120,5 @@ export async function apiPost(path: string, body: Record<string, unknown>, token
         throw new ApiError(res.status, data)
     }
 
-    return data as { token: string; user: { id: string; email: string; username: string } }
+    return data as { token: string; user: { id: string; email: string; username: string; role: string } }
 }

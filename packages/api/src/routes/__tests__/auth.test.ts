@@ -36,6 +36,7 @@ const user = (overrides: Record<string, unknown> = {}) => ({
     id: 'user-1',
     email: 'alice@test.com',
     username: 'alice',
+    role: 'athlete',
     password: 'hashed-password',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -59,7 +60,7 @@ describe('POST /api/auth/signup', () => {
 
         expect(res.status).toBe(201)
         expect(res.body.token).toBeDefined()
-        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice' })
+        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice', role: 'athlete' })
         expect(prisma.user.create).toHaveBeenCalledOnce()
     })
 
@@ -125,7 +126,7 @@ describe('POST /api/auth/signin', () => {
 
         expect(res.status).toBe(200)
         expect(res.body.token).toBeDefined()
-        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice' })
+        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice', role: 'athlete' })
     })
 
     it('rejects wrong password', async () => {

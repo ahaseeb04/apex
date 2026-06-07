@@ -223,7 +223,7 @@ export default function ProgramScreen({ navigation, route }: Props) {
                                                     }
                                                 }
                                             }}
-                                            className="rounded-full px-4 py-[8px] active:opacity-80"
+                                            className="rounded-xl px-4 py-[8px] active:opacity-80"
                                             style={{
                                                 backgroundColor: isActive
                                                     ? c.accent
