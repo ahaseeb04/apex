@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -38,6 +39,16 @@ export default function ProgramScreen({ navigation, route }: Props) {
     const blockLayouts = useRef<Record<string, { x: number; width: number }>>({})
     const blockScrollWidth = useRef(0)
     const hasScrolledToBlock = useRef(false)
+    const [fadeHeight, setFadeHeight] = useState(0)
+    const [showLeftFade, setShowLeftFade] = useState(false)
+    const [showRightFade, setShowRightFade] = useState(false)
+    const contentWidthRef = useRef(0)
+
+    const updateFades = useCallback((offsetX: number, contentW: number) => {
+        const sw = blockScrollWidth.current
+        setShowLeftFade(offsetX > 4)
+        setShowRightFade(offsetX + sw < contentW - 4)
+    }, [])
 
     const handleCapture = useCallback(async () => {
         if (!tableRef.current) return
@@ -164,63 +175,109 @@ export default function ProgramScreen({ navigation, route }: Props) {
                         >
                             Block
                         </Text>
-                        <ScrollView
-                            ref={blockScrollRef}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            onLayout={(e) => {
-                                blockScrollWidth.current = e.nativeEvent.layout.width
-                            }}
-                            contentContainerStyle={{
-                                paddingHorizontal: 24,
-                                gap: 8,
-                            }}
-                        >
-                            {program.blocks.map((block) => {
-                                const isActive = block.id === activeBlockId
+                        <View className="relative">
+                            <ScrollView
+                                ref={blockScrollRef}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                scrollEventThrottle={16}
+                                onLayout={(e) => {
+                                    blockScrollWidth.current = e.nativeEvent.layout.width
+                                    setFadeHeight(e.nativeEvent.layout.height)
+                                }}
+                                onContentSizeChange={(w) => {
+                                    contentWidthRef.current = w
+                                    updateFades(0, w)
+                                }}
+                                onScroll={(e) => {
+                                    updateFades(
+                                        e.nativeEvent.contentOffset.x,
+                                        contentWidthRef.current,
+                                    )
+                                }}
+                                contentContainerStyle={{
+                                    paddingHorizontal: 24,
+                                    gap: 8,
+                                }}
+                            >
+                                {program.blocks.map((block) => {
+                                    const isActive = block.id === activeBlockId
 
-                                return (
-                                    <Pressable
-                                        key={block.id}
-                                        onLayout={(e) => {
-                                            blockLayouts.current[block.id] = {
-                                                x: e.nativeEvent.layout.x,
-                                                width: e.nativeEvent.layout.width,
-                                            }
-                                        }}
-                                        onPress={() => {
-                                            selectBlock(programId, block.id)
-                                            const firstWeek = block.weeks[0]
-                                            if (firstWeek) {
-                                                selectWeek(programId, firstWeek.id)
-                                                const firstDay = firstWeek.days[0]
-                                                if (firstDay) {
-                                                    selectDay(programId, firstDay.id)
+                                    return (
+                                        <Pressable
+                                            key={block.id}
+                                            onLayout={(e) => {
+                                                blockLayouts.current[block.id] = {
+                                                    x: e.nativeEvent.layout.x,
+                                                    width: e.nativeEvent.layout.width,
                                                 }
-                                            }
-                                        }}
-                                        className="rounded-xl px-4 py-[8px] active:opacity-80"
-                                        style={{
-                                            backgroundColor: isActive
-                                                ? c.accent
-                                                : c.surfaceSecondary,
-                                        }}
-                                        accessibilityRole="button"
-                                        accessibilityLabel={`${block.name} block`}
-                                        accessibilityState={{ selected: isActive }}
-                                    >
-                                        <Text
-                                            className="text-[13px] font-semibold"
-                                            style={{
-                                                color: isActive ? c.label : c.labelSecondary,
                                             }}
+                                            onPress={() => {
+                                                selectBlock(programId, block.id)
+                                                const firstWeek = block.weeks[0]
+                                                if (firstWeek) {
+                                                    selectWeek(programId, firstWeek.id)
+                                                    const firstDay = firstWeek.days[0]
+                                                    if (firstDay) {
+                                                        selectDay(programId, firstDay.id)
+                                                    }
+                                                }
+                                            }}
+                                            className="rounded-full px-4 py-[8px] active:opacity-80"
+                                            style={{
+                                                backgroundColor: isActive
+                                                    ? c.accent
+                                                    : c.surfaceSecondary,
+                                            }}
+                                            accessibilityRole="button"
+                                            accessibilityLabel={`${block.name} block`}
+                                            accessibilityState={{ selected: isActive }}
                                         >
-                                            {block.name}
-                                        </Text>
-                                    </Pressable>
-                                )
-                            })}
-                        </ScrollView>
+                                            <Text
+                                                className="text-[13px] font-semibold"
+                                                style={{
+                                                    color: isActive ? c.label : c.labelSecondary,
+                                                }}
+                                            >
+                                                {block.name}
+                                            </Text>
+                                        </Pressable>
+                                    )
+                                })}
+                            </ScrollView>
+                            {showLeftFade && fadeHeight > 0 && (
+                                <LinearGradient
+                                    colors={[c.surface, c.surface + '00']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        top: 0,
+                                        height: fadeHeight,
+                                        width: 32,
+                                        zIndex: 1,
+                                    }}
+                                    pointerEvents="none"
+                                />
+                            )}
+                            {showRightFade && fadeHeight > 0 && (
+                                <LinearGradient
+                                    colors={[c.surface + '00', c.surface]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={{
+                                        position: 'absolute',
+                                        right: 0,
+                                        top: 0,
+                                        height: fadeHeight,
+                                        width: 32,
+                                        zIndex: 1,
+                                    }}
+                                    pointerEvents="none"
+                                />
+                            )}
+                        </View>
 
                         <View className="px-6 mt-5">
                             <Text

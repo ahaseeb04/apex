@@ -54,7 +54,7 @@ export const themes: Theme[] = [
             label: '#FFFFFF',
             labelSecondary: '#8E8E93',
             labelTertiary: '#636366',
-            accent: '#FF375F',
+            accent: '#FF2056',
             border: '#38383A',
             tabBar: '#0D0D0D',
             tabBarBorder: '#2C2C2E',
