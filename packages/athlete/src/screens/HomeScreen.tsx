@@ -7,6 +7,7 @@ import { apiGet, ApiError, type ProgramData } from '../lib/api'
 import { getStoredToken } from '../lib/auth'
 import { useActiveTheme } from '../stores/themeStore'
 import type { HomeStackParamList } from './types'
+import { Ionicons } from '@expo/vector-icons'
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>
 
@@ -102,16 +103,24 @@ export default function HomeScreen({ navigation }: Props) {
                                 accessibilityRole="button"
                                 accessibilityLabel={`${item.name} program`}
                             >
-                                <Text
-                                    className="text-[17px] font-semibold"
-                                    numberOfLines={1}
-                                    style={{ color: c.label }}
-                                >
-                                    {item.name}
-                                </Text>
+                                <View className="flex-row items-center justify-between">
+                                    <Text
+                                        className="text-[17px] font-semibold"
+                                        numberOfLines={1}
+                                        style={{ color: c.label }}
+                                    >
+                                        {item.name}
+                                    </Text>
+
+                                    <Ionicons
+                                        name="chevron-forward"
+                                        size={15}
+                                        color={c.labelTertiary}
+                                    />
+                                </View>
                                 {item.description ? (
                                     <Text
-                                        className="text-[15px] mt-1"
+                                        className="text-[15px] mt-2"
                                         numberOfLines={2}
                                         style={{ color: c.labelSecondary }}
                                     >
