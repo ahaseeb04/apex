@@ -45,7 +45,8 @@ export default function SignUpScreen({ navigation }: Props) {
 
         setLoading(true)
         try {
-            await signUp(email.trim(), password, username.trim())
+            const result = await signUp(email.trim(), password, username.trim())
+            navigation.navigate('VerifyEmail', { userId: result.userId, email: result.email })
         } catch (e) {
             if (e instanceof ApiError) {
                 setError(e.getErrorMessage())

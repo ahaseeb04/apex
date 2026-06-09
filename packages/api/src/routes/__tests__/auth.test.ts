@@ -16,6 +16,10 @@ vi.mock('../../lib/prisma', () => ({
 
 vi.mock('@prisma/adapter-pg', () => ({ PrismaPg: vi.fn() }))
 
+vi.mock('../../lib/email', () => ({
+    sendVerificationEmail: vi.fn(),
+}))
+
 vi.mock('bcryptjs', () => ({
     default: { hash: vi.fn(() => 'hashed-password'), compare: vi.fn() },
     hash: vi.fn(() => 'hashed-password'),
@@ -32,12 +36,18 @@ afterEach(() => {
     vi.clearAllMocks()
 })
 
+const USER_ID = '00000000-0000-0000-0000-000000000001'
+const USER_ID_2 = '00000000-0000-0000-0000-000000000002'
+
 const user = (overrides: Record<string, unknown> = {}) => ({
-    id: 'user-1',
+    id: USER_ID,
     email: 'alice@test.com',
     username: 'alice',
     role: 'athlete',
     password: 'hashed-password',
+    emailVerified: true,
+    emailVerificationCode: null,
+    emailVerificationCodeExpiry: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -45,23 +55,28 @@ const user = (overrides: Record<string, unknown> = {}) => ({
 
 describe('POST /api/auth/signup', () => {
     let prisma: any
+    let sendVerificationEmail: any
 
     beforeAll(async () => {
         prisma = (await import('../../lib/prisma')).prisma
+        sendVerificationEmail = (await import('../../lib/email')).sendVerificationEmail
     })
 
-    it('creates a user and returns a token', async () => {
+    it('creates a user and sends verification email', async () => {
         prisma.user.findFirst.mockResolvedValue(null)
-        prisma.user.create.mockResolvedValue(user())
+        prisma.user.create.mockResolvedValue(user({ emailVerified: false }))
+        sendVerificationEmail.mockResolvedValue(undefined)
 
         const res = await request(app)
             .post('/api/auth/signup')
             .send({ email: 'alice@test.com', password: 'secret123', username: 'alice' })
 
         expect(res.status).toBe(201)
-        expect(res.body.token).toBeDefined()
-        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice', role: 'athlete' })
-        expect(prisma.user.create).toHaveBeenCalledOnce()
+        expect(res.body.userId).toBe(USER_ID)
+        expect(res.body.email).toBe('alice@test.com')
+        expect(res.body.message).toBe('Verification code sent to your email')
+        expect(res.body.token).toBeUndefined()
+        expect(sendVerificationEmail).toHaveBeenCalledWith('alice@test.com', expect.any(String))
     })
 
     it('rejects a duplicate email', async () => {
@@ -126,7 +141,7 @@ describe('POST /api/auth/signin', () => {
 
         expect(res.status).toBe(200)
         expect(res.body.token).toBeDefined()
-        expect(res.body.user).toEqual({ id: 'user-1', email: 'alice@test.com', username: 'alice', role: 'athlete' })
+        expect(res.body.user).toEqual({ id: USER_ID, email: 'alice@test.com', username: 'alice', role: 'athlete' })
     })
 
     it('rejects wrong password', async () => {
@@ -151,6 +166,142 @@ describe('POST /api/auth/signin', () => {
         expect(res.status).toBe(401)
         expect(res.body.error).toBe('invalid email or password')
     })
+
+    it('rejects unverified email with 403 and userId', async () => {
+        prisma.user.findFirst.mockResolvedValue(user({ emailVerified: false }))
+        bcryptCompare.mockResolvedValue(true)
+
+        const res = await request(app)
+            .post('/api/auth/signin')
+            .send({ email: 'alice@test.com', password: 'secret123' })
+
+        expect(res.status).toBe(403)
+        expect(res.body.error).toBe('email not verified')
+        expect(res.body.userId).toBe(USER_ID)
+        expect(res.body.email).toBe('alice@test.com')
+    })
+})
+
+describe('POST /api/auth/verify-email', () => {
+    let prisma: any
+
+    beforeAll(async () => {
+        prisma = (await import('../../lib/prisma')).prisma
+    })
+
+    it('verifies email and returns a token', async () => {
+        const expiry = new Date(Date.now() + 10 * 60 * 1000)
+        prisma.user.findUnique.mockResolvedValue(
+            user({ emailVerified: false, emailVerificationCode: '123456', emailVerificationCodeExpiry: expiry }),
+        )
+        prisma.user.update.mockResolvedValue(user({ emailVerified: true }))
+
+        const res = await request(app)
+            .post('/api/auth/verify-email')
+            .send({ userId: USER_ID, code: '123456' })
+
+        expect(res.status).toBe(200)
+        expect(res.body.token).toBeDefined()
+        expect(res.body.user).toEqual({ id: USER_ID, email: 'alice@test.com', username: 'alice', role: 'athlete' })
+        expect(prisma.user.update).toHaveBeenCalledWith({
+            where: { id: USER_ID },
+            data: { emailVerified: true, emailVerificationCode: null, emailVerificationCodeExpiry: null },
+        })
+    })
+
+    it('rejects invalid code', async () => {
+        const expiry = new Date(Date.now() + 10 * 60 * 1000)
+        prisma.user.findUnique.mockResolvedValue(
+            user({ emailVerified: false, emailVerificationCode: '123456', emailVerificationCodeExpiry: expiry }),
+        )
+
+        const res = await request(app)
+            .post('/api/auth/verify-email')
+            .send({ userId: USER_ID, code: '999999' })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBe('invalid verification code')
+    })
+
+    it('rejects expired code', async () => {
+        const expiry = new Date(Date.now() - 1)
+        prisma.user.findUnique.mockResolvedValue(
+            user({ emailVerified: false, emailVerificationCode: '123456', emailVerificationCodeExpiry: expiry }),
+        )
+
+        const res = await request(app)
+            .post('/api/auth/verify-email')
+            .send({ userId: USER_ID, code: '123456' })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBe('verification code has expired. Please request a new one')
+    })
+
+    it('rejects already verified email', async () => {
+        prisma.user.findUnique.mockResolvedValue(user())
+
+        const res = await request(app)
+            .post('/api/auth/verify-email')
+            .send({ userId: USER_ID, code: '123456' })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBe('email already verified')
+    })
+
+    it('rejects missing code', async () => {
+        const res = await request(app)
+            .post('/api/auth/verify-email')
+            .send({ userId: USER_ID })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBeDefined()
+    })
+})
+
+describe('POST /api/auth/resend-verification', () => {
+    let prisma: any
+    let sendVerificationEmail: any
+
+    beforeAll(async () => {
+        prisma = (await import('../../lib/prisma')).prisma
+        sendVerificationEmail = (await import('../../lib/email')).sendVerificationEmail
+    })
+
+    it('resends verification code', async () => {
+        prisma.user.findUnique.mockResolvedValue(user({ emailVerified: false }))
+        prisma.user.update.mockResolvedValue(user())
+        sendVerificationEmail.mockResolvedValue(undefined)
+
+        const res = await request(app)
+            .post('/api/auth/resend-verification')
+            .send({ userId: USER_ID })
+
+        expect(res.status).toBe(200)
+        expect(res.body.message).toBe('Verification code sent to your email')
+        expect(sendVerificationEmail).toHaveBeenCalledWith('alice@test.com', expect.any(String))
+    })
+
+    it('rejects already verified user', async () => {
+        prisma.user.findUnique.mockResolvedValue(user())
+
+        const res = await request(app)
+            .post('/api/auth/resend-verification')
+            .send({ userId: USER_ID })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBe('email already verified')
+    })
+
+    it('rejects unknown user', async () => {
+        prisma.user.findUnique.mockResolvedValue(null)
+
+        const res = await request(app)
+            .post('/api/auth/resend-verification')
+            .send({ userId: USER_ID_2 })
+
+        expect(res.status).toBe(404)
+        expect(res.body.error).toBe('user not found')
+    })
 })
 
 describe('POST /api/auth/change-password', () => {
@@ -161,7 +312,7 @@ describe('POST /api/auth/change-password', () => {
     beforeAll(async () => {
         prisma = (await import('../../lib/prisma')).prisma
         bcryptCompare = (await import('bcryptjs')).default.compare
-        token = jwt.sign({ sub: 'user-1' }, 'test-secret')
+        token = jwt.sign({ sub: USER_ID }, 'test-secret')
     })
 
     it('changes password and returns success', async () => {
@@ -177,7 +328,7 @@ describe('POST /api/auth/change-password', () => {
         expect(res.status).toBe(200)
         expect(res.body.message).toBe('password changed')
         expect(prisma.user.update).toHaveBeenCalledWith({
-            where: { id: 'user-1' },
+            where: { id: USER_ID },
             data: { password: 'hashed-password' },
         })
     })
@@ -255,7 +406,7 @@ describe('POST /api/auth/delete-account', () => {
     beforeAll(async () => {
         prisma = (await import('../../lib/prisma')).prisma
         bcryptCompare = (await import('bcryptjs')).default.compare
-        token = jwt.sign({ sub: 'user-1' }, 'test-secret')
+        token = jwt.sign({ sub: USER_ID }, 'test-secret')
     })
 
     it('deletes account and returns success', async () => {
@@ -271,12 +422,12 @@ describe('POST /api/auth/delete-account', () => {
         expect(res.status).toBe(200)
         expect(res.body.message).toBe('account deleted')
         expect(prisma.$transaction).toHaveBeenCalledWith([
-            prisma.exercise.deleteMany({ where: { userId: 'user-1' } }),
-            prisma.day.deleteMany({ where: { userId: 'user-1' } }),
-            prisma.week.deleteMany({ where: { userId: 'user-1' } }),
-            prisma.block.deleteMany({ where: { userId: 'user-1' } }),
-            prisma.program.deleteMany({ where: { userId: 'user-1' } }),
-            prisma.user.delete({ where: { id: 'user-1' } }),
+            prisma.exercise.deleteMany({ where: { userId: USER_ID } }),
+            prisma.day.deleteMany({ where: { userId: USER_ID } }),
+            prisma.week.deleteMany({ where: { userId: USER_ID } }),
+            prisma.block.deleteMany({ where: { userId: USER_ID } }),
+            prisma.program.deleteMany({ where: { userId: USER_ID } }),
+            prisma.user.delete({ where: { id: USER_ID } }),
         ])
     })
 

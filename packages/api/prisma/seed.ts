@@ -11,6 +11,7 @@ async function main() {
             email: 'abdul@gmail.com',
             password,
             username: 'abdul',
+            emailVerified: true,
         },
     })
 

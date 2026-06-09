@@ -22,6 +22,7 @@ import AppearanceScreen from './screens/AppearanceScreen'
 import ChangePasswordScreen from './screens/ChangePasswordScreen'
 import SignInScreen from './screens/SignInScreen'
 import SignUpScreen from './screens/SignUpScreen'
+import VerifyEmailScreen from './screens/VerifyEmailScreen'
 import { ToastProvider } from './hooks/use-toast'
 import type {
     HomeStackParamList,
@@ -50,6 +51,7 @@ function AuthStack() {
         >
             <RootStack.Screen name="SignIn" component={SignInScreen} />
             <RootStack.Screen name="SignUp" component={SignUpScreen} />
+            <RootStack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
         </RootStack.Navigator>
     )
 }

@@ -23,6 +23,7 @@
         "express": "^4",
         "jsonwebtoken": "^9",
         "pg": "^8.21.0",
+        "resend": "^6.12.4",
         "zod": "^3"
     },
     "devDependencies": {

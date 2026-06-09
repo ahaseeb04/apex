@@ -12,15 +12,30 @@ export interface AuthUser {
     role: string
 }
 
-export async function signIn(email: string, password: string) {
-    const data = await apiPost('/api/auth/signin', { email, password })
+export interface SignUpResult {
+    userId: string
+    email: string
+}
+
+export async function signUp(email: string, password: string, username: string): Promise<SignUpResult> {
+    const data = await apiPost('/api/auth/signup', { email, password, username })
+    return data as SignUpResult
+}
+
+export async function verifyEmail(userId: string, code: string) {
+    const data = await apiPost('/api/auth/verify-email', { userId, code })
     await SecureStore.setItemAsync(TOKEN_KEY, data.token)
     await SecureStore.setItemAsync(USER_KEY, JSON.stringify(data.user))
     return data
 }
 
-export async function signUp(email: string, password: string, username: string) {
-    const data = await apiPost('/api/auth/signup', { email, password, username })
+export async function resendVerification(userId: string) {
+    const data = await apiPost('/api/auth/resend-verification', { userId })
+    return data
+}
+
+export async function signIn(email: string, password: string) {
+    const data = await apiPost('/api/auth/signin', { email, password })
     await SecureStore.setItemAsync(TOKEN_KEY, data.token)
     await SecureStore.setItemAsync(USER_KEY, JSON.stringify(data.user))
     return data

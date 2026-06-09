@@ -4,19 +4,25 @@ import { ApiError } from '../lib/api'
 import {
     deleteAccount as apiDeleteAccount,
     getStoredAuth,
+    resendVerification as apiResendVerification,
     signIn as apiSignIn,
     signOut as apiSignOut,
     signUp as apiSignUp,
+    verifyEmail as apiVerifyEmail,
 } from '../lib/auth'
 import type { AuthUser } from '../lib/auth'
+
+export { ApiError }
 
 interface AuthState {
     user: AuthUser | null
     isLoading: boolean
     isAuthenticated: boolean
     initialize: () => Promise<void>
+    signUp: (email: string, password: string, username: string) => Promise<{ userId: string; email: string }>
+    verifyEmail: (userId: string, code: string) => Promise<void>
+    resendVerification: (userId: string) => Promise<void>
     signIn: (email: string, password: string) => Promise<void>
-    signUp: (email: string, password: string, username: string) => Promise<void>
     signOut: () => Promise<void>
     deleteAccount: (password: string) => Promise<void>
 }
@@ -37,13 +43,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
-    signIn: async (email, password) => {
-        const data = await apiSignIn(email, password)
+    signUp: async (email, password, username) => {
+        return await apiSignUp(email, password, username)
+    },
+
+    verifyEmail: async (userId, code) => {
+        const data = await apiVerifyEmail(userId, code)
         set({ user: data.user, isAuthenticated: true })
     },
 
-    signUp: async (email, password, username) => {
-        const data = await apiSignUp(email, password, username)
+    resendVerification: async (userId) => {
+        await apiResendVerification(userId)
+    },
+
+    signIn: async (email, password) => {
+        const data = await apiSignIn(email, password)
         set({ user: data.user, isAuthenticated: true })
     },
 
@@ -58,5 +72,3 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ user: null, isAuthenticated: false })
     },
 }))
-
-export { ApiError }

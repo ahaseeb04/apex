@@ -21,5 +21,6 @@ export type SettingsStackParamList = {
 export type RootStackParamList = {
     SignIn: undefined
     SignUp: undefined
+    VerifyEmail: { userId: string; email: string }
     Main: undefined
 }

@@ -11,6 +11,7 @@ interface InputFieldProps {
     keyboardType?: KeyboardTypeOptions
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
     autoCorrect?: boolean
+    maxLength?: number
 }
 
 export default function InputField({
@@ -22,6 +23,7 @@ export default function InputField({
     keyboardType,
     autoCapitalize,
     autoCorrect,
+    maxLength,
 }: InputFieldProps) {
     const c = useActiveTheme().colors
 
@@ -41,6 +43,7 @@ export default function InputField({
                 keyboardType={keyboardType}
                 autoCapitalize={autoCapitalize ?? 'none'}
                 autoCorrect={autoCorrect ?? false}
+                maxLength={maxLength}
                 cursorColor={c.accent}
                 selectionColor={c.accent}
                 accessibilityLabel={label}

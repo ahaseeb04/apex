@@ -42,6 +42,13 @@ export default function SignInScreen({ navigation }: Props) {
             await signIn(email.trim(), password)
         } catch (e) {
             if (e instanceof ApiError) {
+                if (e.status === 403 && typeof e.body === 'object' && e.body !== null) {
+                    const body = e.body as Record<string, unknown>
+                    if (body.error === 'email not verified' && typeof body.userId === 'string' && typeof body.email === 'string') {
+                        navigation.navigate('VerifyEmail', { userId: body.userId, email: body.email })
+                        return
+                    }
+                }
                 setError(e.getErrorMessage())
             } else {
                 setError('Unable to connect to server')

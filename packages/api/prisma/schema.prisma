@@ -7,18 +7,21 @@ datasource db {
 }
 
 model User {
-    id        String     @id @default(uuid())
-    email     String     @unique
-    password  String
-    username  String     @unique
-    role      String     @default("athlete")
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-    programs  Program[]
-    blocks    Block[]
-    weeks     Week[]
-    days      Day[]
-    exercises Exercise[]
+    id                           String     @id @default(uuid())
+    email                        String     @unique
+    password                     String
+    username                     String     @unique
+    role                         String     @default("athlete")
+    emailVerified                Boolean    @default(false)
+    emailVerificationCode        String?
+    emailVerificationCodeExpiry  DateTime?
+    createdAt                    DateTime   @default(now())
+    updatedAt                    DateTime   @updatedAt
+    programs                     Program[]
+    blocks                       Block[]
+    weeks                        Week[]
+    days                         Day[]
+    exercises                    Exercise[]
 }
 
 model Program {
