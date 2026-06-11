@@ -65,23 +65,23 @@ export default function SignInScreen({ navigation }: Props) {
                 className="flex-1"
             >
                 <Pressable className="flex-1 px-6" onPress={Keyboard.dismiss}>
-                    <View className="flex-1 justify-center" style={{ rowGap: 0 }}>
+                    <View className="flex-1 justify-center" style={{ gap: 0 }}>
                         <Text
-                            className="text-[34px] font-bold tracking-tight"
+                            className="text-[32px] font-bold tracking-tight"
                             style={{ color: c.label }}
                         >
-                            Sign In
+                            Sign in
                         </Text>
                         <Text
-                            className="text-[17px] mb-12 mt-1"
+                            className="text-[16px] mt-1.5 mb-10"
                             style={{ color: c.labelSecondary }}
                         >
-                            Welcome back to Conspiracy Barbell
+                            to continue to Conspiracy Barbell
                         </Text>
 
-                        <View style={{ rowGap: 20 }}>
+                        <View style={{ gap: 16 }}>
                             <InputField
-                                label="Email"
+                                label="Email address"
                                 value={email}
                                 onChangeText={setEmail}
                                 placeholder="you@example.com"
@@ -91,14 +91,14 @@ export default function SignInScreen({ navigation }: Props) {
                                 label="Password"
                                 value={password}
                                 onChangeText={setPassword}
-                                placeholder="Required"
+                                placeholder="Enter your password"
                                 secureTextEntry
                             />
                         </View>
 
                         {error ? (
                             <Text
-                                className="text-[15px] mt-4 text-center"
+                                className="text-[14px] mt-5 text-center"
                                 style={{ color: c.error }}
                             >
                                 {error}
@@ -106,39 +106,39 @@ export default function SignInScreen({ navigation }: Props) {
                         ) : null}
 
                         <Pressable
-                            className="rounded-[14px] py-[17px] mt-6 items-center justify-center active:opacity-80 disabled:opacity-50"
+                            className="rounded-[12px] py-[16px] mt-8 items-center justify-center active:opacity-80 disabled:opacity-50"
                             style={{ backgroundColor: c.accent }}
                             onPress={handleSignIn}
                             disabled={loading}
                             accessibilityRole="button"
-                            accessibilityLabel="Sign In"
+                            accessibilityLabel="Continue"
                         >
                             {loading ? (
                                 <ActivityIndicator color={c.label} size="small" />
                             ) : (
                                 <Text
-                                    className="text-center font-semibold text-[17px] tracking-tight"
+                                    className="text-center font-semibold text-[16px]"
                                     style={{ color: c.label }}
                                 >
-                                    Sign In
+                                    Continue
                                 </Text>
                             )}
                         </Pressable>
 
-                        <View className="flex-row justify-center mt-10">
+                        <View className="flex-row justify-center mt-8">
                             <Text className="text-[15px]" style={{ color: c.labelSecondary }}>
-                                Don&apos;t have an account?{' '}
+                                Don't have an account?{' '}
                             </Text>
                             <Pressable
                                 onPress={() => navigation.navigate('SignUp')}
                                 accessibilityRole="button"
-                                accessibilityLabel="Sign Up"
+                                accessibilityLabel="Sign up"
                             >
                                 <Text
                                     className="font-semibold text-[15px]"
                                     style={{ color: c.accent }}
                                 >
-                                    Sign Up
+                                    Sign up
                                 </Text>
                             </Pressable>
                         </View>

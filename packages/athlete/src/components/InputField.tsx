@@ -12,6 +12,7 @@ interface InputFieldProps {
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
     autoCorrect?: boolean
     maxLength?: number
+    variant?: 'bordered' | 'filled'
 }
 
 export default function InputField({
@@ -24,17 +25,28 @@ export default function InputField({
     autoCapitalize,
     autoCorrect,
     maxLength,
+    variant = 'bordered',
 }: InputFieldProps) {
     const c = useActiveTheme().colors
 
+    const isBordered = variant === 'bordered'
+
     return (
         <View>
-            <Text className="text-[13px] font-medium mb-2 ml-1 tracking-wide uppercase" style={{ color: c.labelSecondary }}>
+            <Text
+                className="text-[13px] font-medium mb-2 ml-1 tracking-wide"
+                style={{ color: c.labelSecondary }}
+            >
                 {label}
             </Text>
             <TextInput
                 className="text-[17px] rounded-[12px] px-4 py-[14px] leading-[22px]"
-                style={{ backgroundColor: c.surfaceTertiary, color: c.label }}
+                style={{
+                    backgroundColor: isBordered ? 'transparent' : c.surfaceTertiary,
+                    color: c.label,
+                    borderWidth: isBordered ? 1 : 0,
+                    borderColor: isBordered ? c.border : 'transparent',
+                }}
                 placeholder={placeholder}
                 placeholderTextColor={c.labelTertiary}
                 value={value}
