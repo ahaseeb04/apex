@@ -5,8 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Spinner } from '@/components/ui/spinner'
 import { signIn, ApiError, getStoredAuth, signOut } from '@/lib/auth'
+import { getUsers } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
+import type { User } from '@/lib/api'
 
 export default function Home() {
     const [email, setEmail] = useState('')
@@ -17,6 +22,10 @@ export default function Home() {
     const [checking, setChecking] = useState(true)
     const [, startTransition] = useTransition()
 
+    const [users, setUsers] = useState<User[]>([])
+    const [usersLoading, setUsersLoading] = useState(false)
+    const [search, setSearch] = useState('')
+
     useEffect(() => {
         startTransition(() => {
             const stored = getStoredAuth()
@@ -24,6 +33,42 @@ export default function Home() {
             setChecking(false)
         })
     }, [startTransition])
+
+    useEffect(() => {
+        if (!user) return
+        let cancelled = false
+        async function load() {
+            setUsersLoading(true)
+            try {
+                const data = await getUsers()
+                if (!cancelled) setUsers(data)
+            } catch {
+                if (!cancelled) setUsers([])
+            } finally {
+                if (!cancelled) setUsersLoading(false)
+            }
+        }
+        load()
+        return () => {
+            cancelled = true
+        }
+    }, [user])
+
+    const filteredUsers = users.filter((u) => {
+        const q = search.toLowerCase()
+
+        return (
+            u.username.toLowerCase().includes(q) ||
+            u.email.toLowerCase().includes(q) ||
+            u.role.toLowerCase().includes(q)
+        )
+    })
+
+    function handleSignOut() {
+        signOut()
+        setUser(null)
+        setUsers([])
+    }
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault()
@@ -52,21 +97,82 @@ export default function Home() {
     if (checking) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background">
-                <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                <Spinner className="size-5 text-muted-foreground" />
             </div>
         )
     }
 
     if (user) {
         return (
-            <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background p-6">
-                <div className="text-center">
-                    <p className="text-sm font-medium text-foreground">Signed in</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{user.email}</p>
-                </div>
-                <Button variant="destructive" size="lg" onClick={signOut}>
-                    Sign Out
-                </Button>
+            <div className="flex min-h-screen flex-col bg-background">
+                <header className="sticky top-0 z-10 border-b border-border bg-background">
+                    <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-6">
+                        <h1 className="text-base font-semibold tracking-tight">Users</h1>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-muted-foreground">{user.email}</span>
+                            <Button variant="outline" onClick={handleSignOut}>
+                                Sign Out
+                            </Button>
+                        </div>
+                    </div>
+                </header>
+
+                <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
+                    <div className="mb-4">
+                        <Input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search users..."
+                            className="h-10 bg-transparent"
+                        />
+                    </div>
+
+                    {usersLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Spinner className="size-5 text-muted-foreground" />
+                        </div>
+                    ) : filteredUsers.length === 0 ? (
+                        <p className="py-12 text-center text-base text-muted-foreground">
+                            {search ? 'No users match your search' : 'No users found'}
+                        </p>
+                    ) : (
+                        <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
+                            {filteredUsers.map((u) => (
+                                <div
+                                    key={u.id}
+                                    className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50"
+                                >
+                                    <Avatar>
+                                        <AvatarFallback>
+                                            {u.username.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-base font-medium">
+                                            {u.username}
+                                        </p>
+                                        <p className="truncate text-sm text-muted-foreground">
+                                            {u.email}
+                                        </p>
+                                    </div>
+
+                                    {/* <div className="flex items-center gap-1.5">
+                                        <Badge
+                                            variant={u.role === 'coach' ? 'default' : 'secondary'}
+                                        >
+                                            {u.role}
+                                        </Badge>
+                                        {u.emailVerified ? (
+                                            <Badge variant="outline">Verified</Badge>
+                                        ) : (
+                                            <Badge variant="secondary">Unverified</Badge>
+                                        )}
+                                    </div> */}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </main>
             </div>
         )
     }
@@ -107,11 +213,7 @@ export default function Home() {
                             <p className="text-xs text-destructive text-center">{error}</p>
                         ) : null}
                         <Button type="submit" disabled={loading} className="w-full" size="lg">
-                            {loading ? (
-                                <div className="size-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                            ) : (
-                                'Continue'
-                            )}
+                            {loading ? <Spinner /> : 'Continue'}
                         </Button>
                     </form>
                 </CardContent>
