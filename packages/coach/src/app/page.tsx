@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
+import { ThemeSheet } from '@/components/theme-sheet'
 import { signIn, ApiError, getStoredAuth, signOut } from '@/lib/auth'
 import { getUsers } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
@@ -110,6 +111,7 @@ export default function Home() {
                         <h1 className="text-base font-semibold tracking-tight">Users</h1>
                         <div className="flex items-center gap-3">
                             <span className="text-sm text-muted-foreground">{user.email}</span>
+                            <ThemeSheet />
                             <Button variant="outline" onClick={handleSignOut}>
                                 Sign Out
                             </Button>
@@ -156,7 +158,7 @@ export default function Home() {
                                         </p>
                                     </div>
 
-                                    {/* <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5">
                                         <Badge
                                             variant={u.role === 'coach' ? 'default' : 'secondary'}
                                         >
@@ -167,7 +169,7 @@ export default function Home() {
                                         ) : (
                                             <Badge variant="secondary">Unverified</Badge>
                                         )}
-                                    </div> */}
+                                    </div>
                                 </div>
                             ))}
                         </div>
