@@ -20,6 +20,7 @@ function generateToken(userId: string): string {
 const signinSchema = z.object({
     email: z.string().email(),
     password: z.string(),
+    role: z.enum(['athlete', 'coach']).optional(),
 })
 
 authRouter.post('/signin', async (req, res) => {
@@ -29,7 +30,7 @@ authRouter.post('/signin', async (req, res) => {
         return
     }
 
-    const { email, password } = parsed.data
+    const { email, password, role } = parsed.data
 
     const user = await prisma.user.findFirst({ where: { email } })
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -39,6 +40,11 @@ authRouter.post('/signin', async (req, res) => {
 
     if (!user.emailVerified) {
         res.status(403).json({ error: 'email not verified', userId: user.id, email: user.email })
+        return
+    }
+
+    if (role && user.role !== role) {
+        res.status(403).json({ error: `this account does not have the ${role} role` })
         return
     }
 
