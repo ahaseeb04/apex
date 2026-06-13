@@ -107,9 +107,25 @@ const daySchema = z.object({
     exercises: z.array(exerciseSchema),
 })
 
+const fatigueIndexSchema = z
+    .object({
+        sleep_quality: z.number().min(0).max(5),
+        cognitive_capacity: z.number().min(0).max(5),
+        general_motivation: z.number().min(0).max(5),
+        motivation_to_train: z.number().min(0).max(5),
+        sense_of_wellbeing: z.number().min(0).max(5),
+        perceived_stress: z.number().min(0).max(5),
+        energy_levels: z.number().min(0).max(5),
+        libido: z.number().min(0).max(5),
+        soreness: z.number().min(0).max(5),
+    })
+    .nullable()
+
 const weekSchema = z.object({
     weekNumber: z.number().int().min(1),
     coachNotesForUser: z.string().nullable().optional(),
+    userNotesForCoach: z.string().nullable().optional(),
+    fatigueIndex: fatigueIndexSchema.optional(),
     days: z.array(daySchema),
 })
 
@@ -184,16 +200,20 @@ programRouter.post('/', requireAuth, async (req, res) => {
                 create: blocksData.map((block) => ({
                     name: block.name,
                     order: block.order,
-                    userId: authUserId,
+                    user: { connect: { id: authUserId } },
                     weeks: {
                         create: block.weeks.map((week) => ({
                             weekNumber: week.weekNumber,
                             coachNotesForUser: week.coachNotesForUser ?? null,
-                            userId: authUserId,
+                            userNotesForCoach: week.userNotesForCoach ?? null,
+                            ...(week.fatigueIndex != null
+                                ? { fatigueIndex: week.fatigueIndex }
+                                : {}),
+                            user: { connect: { id: authUserId } },
                             days: {
                                 create: week.days.map((day) => ({
                                     dayNumber: day.dayNumber,
-                                    userId: authUserId,
+                                    user: { connect: { id: authUserId } },
                                     exercises: {
                                         create: day.exercises.map((exercise) => ({
                                             name: exercise.name,
@@ -204,7 +224,7 @@ programRouter.post('/', requireAuth, async (req, res) => {
                                             loadActual: exercise.loadActual ?? null,
                                             rpeActual: exercise.rpeActual ?? null,
                                             order: exercise.order,
-                                            userId: authUserId,
+                                            user: { connect: { id: authUserId } },
                                         })),
                                     },
                                 })),
@@ -269,16 +289,20 @@ programRouter.patch('/:id', requireAuth, async (req, res) => {
                 create: blocksData.map((block) => ({
                     name: block.name,
                     order: block.order,
-                    userId: authUserId,
+                    user: { connect: { id: authUserId } },
                     weeks: {
                         create: block.weeks.map((week) => ({
                             weekNumber: week.weekNumber,
                             coachNotesForUser: week.coachNotesForUser ?? null,
-                            userId: authUserId,
+                            userNotesForCoach: week.userNotesForCoach ?? null,
+                            ...(week.fatigueIndex != null
+                                ? { fatigueIndex: week.fatigueIndex }
+                                : {}),
+                            user: { connect: { id: authUserId } },
                             days: {
                                 create: week.days.map((day) => ({
                                     dayNumber: day.dayNumber,
-                                    userId: authUserId,
+                                    user: { connect: { id: authUserId } },
                                     exercises: {
                                         create: day.exercises.map((exercise) => ({
                                             name: exercise.name,
@@ -289,7 +313,7 @@ programRouter.patch('/:id', requireAuth, async (req, res) => {
                                             loadActual: exercise.loadActual ?? null,
                                             rpeActual: exercise.rpeActual ?? null,
                                             order: exercise.order,
-                                            userId: authUserId,
+                                            user: { connect: { id: authUserId } },
                                         })),
                                     },
                                 })),

@@ -14,6 +14,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import {
+    Accordion,
+    AccordionItem,
+    AccordionTrigger,
+    AccordionContent,
+} from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import {
     createProgram,
@@ -26,6 +32,18 @@ import {
 
 const EXERCISE_NAMES_CACHE_KEY = 'exerciseNames'
 const CACHE_TTL = 3 * 60 * 60 * 1000
+
+const FATIGUE_METRICS = [
+    { key: 'sleep_quality', label: 'Sleep Quality' },
+    { key: 'cognitive_capacity', label: 'Cognitive Capacity' },
+    { key: 'general_motivation', label: 'General Motivation' },
+    { key: 'motivation_to_train', label: 'Motivation to Train' },
+    { key: 'sense_of_wellbeing', label: 'Sense of Wellbeing' },
+    { key: 'perceived_stress', label: 'Perceived Stress' },
+    { key: 'energy_levels', label: 'Energy Levels' },
+    { key: 'libido', label: 'Libido' },
+    { key: 'soreness', label: 'Soreness' },
+]
 
 interface ExerciseNamesCache {
     names: string[]
@@ -106,6 +124,7 @@ interface WeekEntry {
     _key: string
     id?: string
     weekNumber: number
+    fatigueIndex: Record<string, number> | null
     coachNotesForUser: string
     userNotesForCoach: string
     days: DayEntry[]
@@ -143,6 +162,7 @@ function emptyWeek(weekNumber: number): WeekEntry {
     return {
         _key: nextKey(),
         weekNumber,
+        fatigueIndex: null,
         coachNotesForUser: '',
         userNotesForCoach: '',
         days: [emptyDay(1)],
@@ -173,6 +193,7 @@ function fromProgram(p: Program): {
                 _key: w.id,
                 id: w.id,
                 weekNumber: w.weekNumber,
+                fatigueIndex: w.fatigueIndex as Record<string, number> | null,
                 coachNotesForUser: w.coachNotesForUser ?? '',
                 userNotesForCoach: w.userNotesForCoach ?? '',
                 days: w.days.map((d: DayData) => ({
@@ -207,6 +228,8 @@ function toCreatePayload(userId: string, name: string, description: string, bloc
             weeks: b.weeks.map((w) => ({
                 weekNumber: w.weekNumber,
                 coachNotesForUser: w.coachNotesForUser || null,
+                userNotesForCoach: w.userNotesForCoach || null,
+                fatigueIndex: w.fatigueIndex,
                 days: w.days.map((d) => ({
                     dayNumber: d.dayNumber,
                     exercises: d.exercises
@@ -237,6 +260,8 @@ function toUpdatePayload(name: string, description: string, blocks: BlockEntry[]
                 ...(w.id ? { id: w.id } : {}),
                 weekNumber: w.weekNumber,
                 coachNotesForUser: w.coachNotesForUser || null,
+                userNotesForCoach: w.userNotesForCoach || null,
+                fatigueIndex: w.fatigueIndex,
                 days: w.days.map((d) => ({
                     ...(d.id ? { id: d.id } : {}),
                     dayNumber: d.dayNumber,
@@ -912,6 +937,86 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                     placeholder={`Notes for Week ${selectedWeek.weekNumber}...`}
                                     className="min-h-24"
                                 />
+                            </>
+                        )}
+
+                        {selectedBlock.weeks.length > 0 && (
+                            <>
+                                <SectionLabel>Fatigue Index</SectionLabel>
+                                <Accordion
+                                    type="single"
+                                    collapsible
+                                    className="rounded-xl border border-border"
+                                >
+                                    {selectedBlock.weeks.map((week) => {
+                                        const fi = week.fatigueIndex
+                                        const hasData = fi != null
+                                        const percentage = hasData
+                                            ? (() => {
+                                                  const sum = Object.values(fi).reduce(
+                                                      (a, b) => a + b,
+                                                      0,
+                                                  )
+                                                  const raw =
+                                                      Math.round((sum / 245) * 1000) / 1000
+                                                  const pct = isNaN(raw) || !isFinite(raw)
+                                                      ? 0
+                                                      : Math.round(raw * 100 * 10) / 10
+                                                  return pct
+                                              })()
+                                            : null
+
+                                        return (
+                                            <AccordionItem
+                                                key={week._key}
+                                                value={week._key}
+                                            >
+                                                <AccordionTrigger className="px-4 hover:no-underline">
+                                                    <div className="flex flex-1 items-center justify-between gap-4">
+                                                        <span className="font-medium">
+                                                            Week {week.weekNumber}
+                                                        </span>
+                                                        {hasData ? (
+                                                            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+                                                                {percentage}%
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-sm text-muted-foreground/50">
+                                                                No data
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="px-4">
+                                                    {hasData ? (
+                                                        <div className="grid grid-cols-3 gap-x-4 gap-y-2 pt-1">
+                                                            {FATIGUE_METRICS.map(
+                                                                ({ key, label }) => (
+                                                                    <div
+                                                                        key={key}
+                                                                        className="flex items-center justify-between rounded-md bg-secondary px-3 py-2"
+                                                                    >
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {label}
+                                                                        </span>
+                                                                        <span className="ml-2 text-sm font-medium tabular-nums">
+                                                                            {fi[key]}
+                                                                        </span>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Athlete has not submitted fatigue data
+                                                            for this week.
+                                                        </p>
+                                                    )}
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        )
+                                    })}
+                                </Accordion>
                             </>
                         )}
                     </>
