@@ -7,6 +7,15 @@ import { prisma } from '../lib/prisma'
 
 export const exerciseRouter = Router()
 
+exerciseRouter.get('/', requireAuth, async (req, res) => {
+    const exercises = await prisma.exercise.findMany({
+        select: { name: true },
+        distinct: ['name'],
+    })
+
+    res.json(exercises.map((e) => e.name))
+})
+
 const updateSchema = z.object({
     loadActual: z.number().nullable().optional(),
     rpeActual: z.number().nullable().optional(),

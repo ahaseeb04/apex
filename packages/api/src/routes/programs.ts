@@ -97,6 +97,8 @@ const exerciseSchema = z.object({
     reps: z.number().int().min(0),
     expectedRpe: z.number().nullable().optional(),
     loadRange: z.string().nullable().optional(),
+    loadActual: z.number().nullable().optional(),
+    rpeActual: z.number().nullable().optional(),
     order: z.number().int().min(0),
 })
 
@@ -199,6 +201,8 @@ programRouter.post('/', requireAuth, async (req, res) => {
                                             reps: exercise.reps,
                                             expectedRpe: exercise.expectedRpe ?? null,
                                             loadRange: exercise.loadRange ?? null,
+                                            loadActual: exercise.loadActual ?? null,
+                                            rpeActual: exercise.rpeActual ?? null,
                                             order: exercise.order,
                                             userId: authUserId,
                                         })),
@@ -282,6 +286,8 @@ programRouter.patch('/:id', requireAuth, async (req, res) => {
                                             reps: exercise.reps,
                                             expectedRpe: exercise.expectedRpe ?? null,
                                             loadRange: exercise.loadRange ?? null,
+                                            loadActual: exercise.loadActual ?? null,
+                                            rpeActual: exercise.rpeActual ?? null,
                                             order: exercise.order,
                                             userId: authUserId,
                                         })),

@@ -207,6 +207,10 @@ async function apiDelete(path: string) {
     return data
 }
 
+export async function getExerciseNames() {
+    return (await apiGet('/api/exercises')) as string[]
+}
+
 export async function deleteProgram(programId: string) {
     return (await apiDelete(`/api/programs/${programId}`)) as { message: string }
 }
