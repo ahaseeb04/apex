@@ -21,7 +21,10 @@ export default function UserProgramsPage() {
     const router = useRouter()
 
     const userId = params.userId as string
-    const username = searchParams.get('name') ?? 'User'
+    const username =
+        (typeof window !== 'undefined' ? sessionStorage.getItem('name') : null) ??
+        searchParams.get('name') ??
+        'User'
 
     const [user, setUser] = useState<AuthUser | null>(null)
     const [checking, setChecking] = useState(true)

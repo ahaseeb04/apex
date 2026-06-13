@@ -134,6 +134,7 @@ export default function Home() {
                                     key={u.id}
                                     href={`/users/${u.id}/programs?name=${encodeURIComponent(u.username)}`}
                                     className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50"
+                                    onClick={() => sessionStorage.setItem('name', u.username)}
                                 >
                                     <Avatar>
                                         <AvatarFallback>
