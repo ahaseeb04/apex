@@ -45,6 +45,12 @@ const FATIGUE_METRICS = [
     { key: 'soreness', label: 'Soreness' },
 ]
 
+const WEEKLY_CHECK_IN_METRICS = [
+    { key: 'bodyweight', label: 'Bodyweight', unit: 'lbs' },
+    { key: 'calories', label: 'Calories', unit: 'kcal' },
+    { key: 'sleep_hours', label: 'Sleep', unit: 'hrs' },
+]
+
 interface ExerciseNamesCache {
     names: string[]
     lastFetched: number
@@ -125,6 +131,7 @@ interface WeekEntry {
     id?: string
     weekNumber: number
     fatigueIndex: Record<string, number> | null
+    weeklyCheckIn: Record<string, number> | null
     coachNotesForUser: string
     userNotesForCoach: string
     days: DayEntry[]
@@ -163,6 +170,7 @@ function emptyWeek(weekNumber: number): WeekEntry {
         _key: nextKey(),
         weekNumber,
         fatigueIndex: null,
+        weeklyCheckIn: null,
         coachNotesForUser: '',
         userNotesForCoach: '',
         days: [emptyDay(1)],
@@ -194,6 +202,7 @@ function fromProgram(p: Program): {
                 id: w.id,
                 weekNumber: w.weekNumber,
                 fatigueIndex: w.fatigueIndex as Record<string, number> | null,
+                weeklyCheckIn: w.weeklyCheckIn as Record<string, number> | null,
                 coachNotesForUser: w.coachNotesForUser ?? '',
                 userNotesForCoach: w.userNotesForCoach ?? '',
                 days: w.days.map((d: DayData) => ({
@@ -230,6 +239,7 @@ function toCreatePayload(userId: string, name: string, description: string, bloc
                 coachNotesForUser: w.coachNotesForUser || null,
                 userNotesForCoach: w.userNotesForCoach || null,
                 fatigueIndex: w.fatigueIndex,
+                weeklyCheckIn: w.weeklyCheckIn,
                 days: w.days.map((d) => ({
                     dayNumber: d.dayNumber,
                     exercises: d.exercises
@@ -262,6 +272,7 @@ function toUpdatePayload(name: string, description: string, blocks: BlockEntry[]
                 coachNotesForUser: w.coachNotesForUser || null,
                 userNotesForCoach: w.userNotesForCoach || null,
                 fatigueIndex: w.fatigueIndex,
+                weeklyCheckIn: w.weeklyCheckIn,
                 days: w.days.map((d) => ({
                     ...(d.id ? { id: d.id } : {}),
                     dayNumber: d.dayNumber,
@@ -1047,6 +1058,71 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                         <p className="text-sm text-muted-foreground">
                                                             Athlete has not submitted fatigue data
                                                             for this week.
+                                                        </p>
+                                                    )}
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        )
+                                    })}
+                                </Accordion>
+                            </>
+                        )}
+
+                        {selectedBlock.weeks.length > 0 && (
+                            <>
+                                <SectionLabel>Weekly Check-In</SectionLabel>
+                                <Accordion
+                                    type="single"
+                                    collapsible
+                                    className="rounded-xl border border-border"
+                                >
+                                    {selectedBlock.weeks.map((week) => {
+                                        const wci = week.weeklyCheckIn
+                                        const hasWci = wci != null
+                                        return (
+                                            <AccordionItem
+                                                key={`wci-${week._key}`}
+                                                value={`wci-${week._key}`}
+                                            >
+                                                <AccordionTrigger className="px-4 hover:no-underline">
+                                                    <div className="flex flex-1 items-center justify-between gap-4">
+                                                        <span className="font-medium">
+                                                            Week {week.weekNumber}
+                                                        </span>
+                                                        {hasWci ? (
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {wci.bodyweight} kg
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-sm text-muted-foreground/50">
+                                                                No data
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="px-4">
+                                                    {hasWci ? (
+                                                        <div className="grid grid-cols-3 gap-x-4 gap-y-2 pt-1">
+                                                            {WEEKLY_CHECK_IN_METRICS.map(
+                                                                ({ key, label, unit }) => (
+                                                                    <div
+                                                                        key={key}
+                                                                        className="flex items-center justify-between rounded-md bg-secondary px-3 py-2"
+                                                                    >
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {label}
+                                                                        </span>
+                                                                        <span className="ml-2 text-sm font-medium tabular-nums">
+                                                                            {wci[key]} {unit}
+                                                                        </span>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Athlete has not submitted a weekly
+                                                            check-in for this week.
                                                         </p>
                                                     )}
                                                 </AccordionContent>

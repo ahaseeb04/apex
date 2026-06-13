@@ -121,11 +121,20 @@ const fatigueIndexSchema = z
     })
     .nullable()
 
+const weeklyCheckInSchema = z
+    .object({
+        bodyweight: z.number(),
+        calories: z.number(),
+        sleep_hours: z.number(),
+    })
+    .nullable()
+
 const weekSchema = z.object({
     weekNumber: z.number().int().min(1),
     coachNotesForUser: z.string().nullable().optional(),
     userNotesForCoach: z.string().nullable().optional(),
     fatigueIndex: fatigueIndexSchema.optional(),
+    weeklyCheckIn: weeklyCheckInSchema.optional(),
     days: z.array(daySchema),
 })
 
@@ -208,6 +217,9 @@ programRouter.post('/', requireAuth, async (req, res) => {
                             userNotesForCoach: week.userNotesForCoach ?? null,
                             ...(week.fatigueIndex != null
                                 ? { fatigueIndex: week.fatigueIndex }
+                                : {}),
+                            ...(week.weeklyCheckIn != null
+                                ? { weeklyCheckIn: week.weeklyCheckIn }
                                 : {}),
                             user: { connect: { id: authUserId } },
                             days: {
@@ -297,6 +309,9 @@ programRouter.patch('/:id', requireAuth, async (req, res) => {
                             userNotesForCoach: week.userNotesForCoach ?? null,
                             ...(week.fatigueIndex != null
                                 ? { fatigueIndex: week.fatigueIndex }
+                                : {}),
+                            ...(week.weeklyCheckIn != null
+                                ? { weeklyCheckIn: week.weeklyCheckIn }
                                 : {}),
                             user: { connect: { id: authUserId } },
                             days: {

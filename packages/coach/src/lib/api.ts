@@ -141,6 +141,7 @@ export async function createProgram(body: {
             coachNotesForUser: string | null
             userNotesForCoach: string | null
             fatigueIndex: Record<string, number> | null
+            weeklyCheckIn: Record<string, number> | null
             days: {
                 dayNumber: number
                 exercises: {
@@ -173,6 +174,7 @@ export async function updateProgram(
                 coachNotesForUser: string | null
                 userNotesForCoach: string | null
                 fatigueIndex: Record<string, number> | null
+                weeklyCheckIn: Record<string, number> | null
                 days: {
                     id?: string
                     dayNumber: number
