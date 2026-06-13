@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -140,8 +141,9 @@ export default function Home() {
                     ) : (
                         <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
                             {filteredUsers.map((u) => (
-                                <div
+                                <Link
                                     key={u.id}
+                                    href={`/users/${u.id}/programs?name=${encodeURIComponent(u.username)}`}
                                     className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50"
                                 >
                                     <Avatar>
@@ -157,7 +159,7 @@ export default function Home() {
                                             {u.email}
                                         </p>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     )}

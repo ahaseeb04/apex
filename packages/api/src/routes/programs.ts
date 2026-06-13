@@ -8,7 +8,18 @@ import type { AuthenticatedRequest } from '../middleware/auth'
 export const programRouter = Router()
 
 programRouter.get('/', requireAuth, async (req, res) => {
-    const { userId } = req as AuthenticatedRequest
+    const { userId: authUserId } = req as AuthenticatedRequest
+    const targetUserId = typeof req.query.userId === 'string' ? req.query.userId : undefined
+
+    if (targetUserId) {
+        const currentUser = await prisma.user.findUnique({ where: { id: authUserId } })
+        if (!currentUser || currentUser.role !== 'coach') {
+            res.status(403).json({ error: 'only coaches can view other users programs' })
+            return
+        }
+    }
+
+    const userId = targetUserId ?? authUserId
 
     const programs = await prisma.program.findMany({
         where: { userId },
