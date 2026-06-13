@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -436,6 +437,8 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
     })
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
+    const [weekSelectKey, setWeekSelectKey] = useState(0)
+    const [daySelectKey, setDaySelectKey] = useState(0)
     const exerciseNames = useExerciseNames()
 
     useEffect(() => {
@@ -449,6 +452,33 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
             // ignore
         }
     }, [storageKey, selectedBlockIdx, selectedWeekIdx, selectedDayIdx])
+
+    const weekCountRef = useRef<number | null>(null)
+    const dayCountRef = useRef<number | null>(null)
+
+    useLayoutEffect(() => {
+        const block = blocks[selectedBlockIdx]
+        const weekLen = block?.weeks.length ?? 0
+        const prev = weekCountRef.current
+        weekCountRef.current = weekLen
+        if (prev != null && weekLen > prev) {
+            setSelectedWeekIdx(weekLen - 1)
+            setSelectedDayIdx(0)
+            setWeekSelectKey((k) => k + 1)
+        }
+    }, [blocks, selectedBlockIdx])
+
+    useLayoutEffect(() => {
+        const block = blocks[selectedBlockIdx]
+        const week = block?.weeks[selectedWeekIdx]
+        const dayLen = week?.days.length ?? 0
+        const prev = dayCountRef.current
+        dayCountRef.current = dayLen
+        if (prev != null && dayLen > prev) {
+            setSelectedDayIdx(dayLen - 1)
+            setDaySelectKey((k) => k + 1)
+        }
+    }, [blocks, selectedBlockIdx, selectedWeekIdx])
 
     const selectedBlock = blocks[selectedBlockIdx]
     const selectedWeek = selectedBlock?.weeks[selectedWeekIdx]
@@ -485,8 +515,6 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 ...block,
                 weeks: [...block.weeks, emptyWeek(nextNumber)],
             }
-            setSelectedWeekIdx(block.weeks.length)
-            setSelectedDayIdx(0)
             return newBlocks
         })
     }, [selectedBlockIdx])
@@ -526,7 +554,6 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 days: [...week.days, emptyDay(nextNumber)],
             }
             newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
-            setSelectedDayIdx(week.days.length)
             return newBlocks
         })
     }, [selectedBlockIdx, selectedWeekIdx])
@@ -722,6 +749,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex gap-2 items-center">
                                 <Select
+                                    key={weekSelectKey}
                                     value={String(selectedWeekIdx)}
                                     onValueChange={(v) => {
                                         setSelectedWeekIdx(Number(v))
@@ -766,6 +794,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                             {selectedWeek && (
                                 <div className="flex gap-2 items-center">
                                     <Select
+                                        key={daySelectKey}
                                         value={String(selectedDayIdx)}
                                         onValueChange={(v) => setSelectedDayIdx(Number(v))}
                                     >
