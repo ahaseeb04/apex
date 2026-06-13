@@ -1091,7 +1091,14 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                         </span>
                                                         {hasWci ? (
                                                             <span className="text-sm text-muted-foreground">
-                                                                {wci.bodyweight} kg
+                                                                {wci.bodyweight}{' '}
+                                                                {
+                                                                    WEEKLY_CHECK_IN_METRICS.find(
+                                                                        (metric) =>
+                                                                            metric.key ===
+                                                                            'bodyweight',
+                                                                    )?.unit
+                                                                }
                                                             </span>
                                                         ) : (
                                                             <span className="text-sm text-muted-foreground/50">
