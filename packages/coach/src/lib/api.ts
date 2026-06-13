@@ -260,3 +260,28 @@ export async function getVideos(exerciseName?: string) {
 export async function deleteVideo(videoId: string) {
     return (await apiDelete(`/api/videos/${videoId}`)) as { message: string }
 }
+
+export async function updateVideo(
+    videoId: string,
+    { exerciseName, thumbnail, thumbnailUrl }: { exerciseName?: string; thumbnail?: File; thumbnailUrl?: string },
+) {
+    const token = getToken()
+    const formData = new FormData()
+    if (exerciseName) formData.append('exerciseName', exerciseName)
+    if (thumbnail) formData.append('thumbnail', thumbnail)
+    if (thumbnailUrl) formData.append('thumbnailUrl', thumbnailUrl)
+
+    const res = await fetch(`${API_URL}/api/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data as ExerciseVideo
+}

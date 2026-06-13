@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import {
     Table,
     TableHeader,
@@ -21,6 +22,7 @@ import {
 import { cn } from '@/lib/utils'
 import { ExerciseNameInput, useExerciseNames } from '@/components/exercise-name-input'
 import { uploadVideo, getVideos, deleteVideo, type ExerciseVideo } from '@/lib/api'
+import { EditVideoDialog } from '@/components/edit-video-dialog'
 
 export function VideoUploadForm() {
     const exerciseNames = useExerciseNames()
@@ -107,6 +109,10 @@ export function VideoUploadForm() {
         } finally {
             setDeletingId(null)
         }
+    }
+
+    function handleUpdated(updated: ExerciseVideo) {
+        setVideos((prev) => prev.map((v) => (v.id === updated.id ? updated : v)))
     }
 
     return (
@@ -249,7 +255,7 @@ export function VideoUploadForm() {
                                     <TableHead className="w-16">Thumbnail</TableHead>
                                     <TableHead>Exercise</TableHead>
                                     <TableHead>Uploaded</TableHead>
-                                    <TableHead className="w-16">Actions</TableHead>
+                                    <TableHead className="w-20">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -265,7 +271,10 @@ export function VideoUploadForm() {
                                             <Skeleton className="h-3 w-24" />
                                         </TableCell>
                                         <TableCell>
-                                            <Skeleton className="h-6 w-6 rounded" />
+                                            <div className="flex items-center gap-0.5">
+                                                <Skeleton className="h-6 w-6 rounded" />
+                                                <Skeleton className="h-6 w-6 rounded" />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -290,7 +299,7 @@ export function VideoUploadForm() {
                                     <TableHead className="w-16">Thumbnail</TableHead>
                                     <TableHead>Exercise</TableHead>
                                     <TableHead>Uploaded</TableHead>
-                                    <TableHead className="w-16">Actions</TableHead>
+                                    <TableHead className="w-20">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -298,11 +307,25 @@ export function VideoUploadForm() {
                                     <TableRow key={video.id}>
                                         <TableCell>
                                             {video.thumbnailUrl ? (
-                                                <img
-                                                    src={video.thumbnailUrl}
-                                                    alt={video.exerciseName}
-                                                    className="aspect-video w-12 rounded object-cover"
-                                                />
+                                                <HoverCard openDelay={200} closeDelay={100}>
+                                                    <HoverCardTrigger asChild>
+                                                        <img
+                                                            src={video.thumbnailUrl}
+                                                            alt={video.exerciseName}
+                                                            className="aspect-video w-12 rounded object-cover cursor-pointer"
+                                                        />
+                                                    </HoverCardTrigger>
+                                                    <HoverCardContent
+                                                        side="top"
+                                                        className="w-96 p-2"
+                                                    >
+                                                        <img
+                                                            src={video.thumbnailUrl}
+                                                            alt={video.exerciseName}
+                                                            className="aspect-video w-full rounded object-cover"
+                                                        />
+                                                    </HoverCardContent>
+                                                </HoverCard>
                                             ) : (
                                                 <div className="flex aspect-video w-12 items-center justify-center rounded bg-muted">
                                                     <FileVideoIcon className="size-4 text-muted-foreground/30" />
@@ -328,15 +351,21 @@ export function VideoUploadForm() {
                                             })}
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-xs"
-                                                disabled={deletingId === video.id}
-                                                className="text-muted-foreground/40 hover:text-destructive"
-                                                onClick={() => handleDelete(video.id)}
-                                            >
-                                                <XIcon className="size-3" />
-                                            </Button>
+                                            <div className="flex items-center gap-0.5">
+                                                <EditVideoDialog
+                                                    video={video}
+                                                    onUpdated={handleUpdated}
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-xs"
+                                                    disabled={deletingId === video.id}
+                                                    className="text-muted-foreground/40 hover:text-destructive"
+                                                    onClick={() => handleDelete(video.id)}
+                                                >
+                                                    <XIcon className="size-3" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

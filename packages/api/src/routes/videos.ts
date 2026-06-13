@@ -4,7 +4,7 @@ import multer from 'multer'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { randomUUID } from 'node:crypto'
-import { unlink, readFile } from 'node:fs/promises'
+import { unlink, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -164,4 +164,123 @@ videoRouter.delete('/:id', requireAuth, async (req, res) => {
     })
 
     res.json({ message: 'Video deleted' })
+})
+
+const imageUpload = multer({
+    storage: multer.diskStorage({
+        destination: tmpdir(),
+        filename: (_req, _file, cb) => {
+            cb(null, `${randomUUID()}.jpg`)
+        },
+    }),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true)
+        } else {
+            cb(new Error('Only image files are allowed'))
+        }
+    },
+})
+
+videoRouter.patch('/:id', requireAuth, (req, res, next) => {
+    imageUpload.single('thumbnail')(req, res, async (err) => {
+        if (err) {
+            res.status(400).json({ error: err.message })
+            return
+        }
+
+        const parsed = deleteSchema.safeParse({ id: req.params.id })
+        if (!parsed.success) {
+            res.status(400).json({ error: 'Invalid video id' })
+            return
+        }
+
+        const video = await prisma.exerciseVideo.findUnique({
+            where: { id: parsed.data.id },
+        })
+
+        if (!video) {
+            res.status(404).json({ error: 'Video not found' })
+            return
+        }
+
+        const exerciseName = (req.body.exerciseName as string | undefined)?.trim()
+        const thumbnailUrlBody = (req.body.thumbnailUrl as string | undefined)?.trim()
+        const file = req.file
+
+        if (!exerciseName && !file && !thumbnailUrlBody) {
+            res.status(400).json({ error: 'No fields to update' })
+            return
+        }
+
+        try {
+            let thumbnailUrl = video.thumbnailUrl
+
+            if (file) {
+                const thumbBuffer = await readFile(file.path)
+                const thumbKey = `thumbnails/${randomUUID()}.jpg`
+                thumbnailUrl = await uploadToR2(thumbKey, thumbBuffer, 'image/jpeg')
+                await unlink(file.path)
+
+                if (video.thumbnailUrl) {
+                    const oldKey = extractKey(video.thumbnailUrl)
+                    try {
+                        await deleteFromR2(oldKey)
+                    } catch {}
+                }
+            } else if (thumbnailUrlBody) {
+                let tempPath: string | null = null
+                try {
+                    const response = await fetch(thumbnailUrlBody)
+                    if (!response.ok) {
+                        res.status(400).json({ error: 'Failed to download thumbnail from URL' })
+                        return
+                    }
+                    const contentType = response.headers.get('content-type') ?? ''
+                    if (!contentType.startsWith('image/')) {
+                        res.status(400).json({ error: 'URL does not point to an image' })
+                        return
+                    }
+                    const buffer = Buffer.from(await response.arrayBuffer())
+                    const ext = contentType.split('/')[1] ?? 'jpg'
+                    tempPath = `${tmpdir()}/${randomUUID()}.${ext}`
+                    await writeFile(tempPath, buffer)
+
+                    const thumbBuffer = await readFile(tempPath)
+                    const thumbKey = `thumbnails/${randomUUID()}.${ext}`
+                    thumbnailUrl = await uploadToR2(thumbKey, thumbBuffer, contentType)
+                } catch {
+                    res.status(400).json({ error: 'Failed to download thumbnail from URL' })
+                    return
+                } finally {
+                    if (tempPath) {
+                        try { await unlink(tempPath) } catch {}
+                    }
+                }
+
+                if (video.thumbnailUrl) {
+                    const oldKey = extractKey(video.thumbnailUrl)
+                    try {
+                        await deleteFromR2(oldKey)
+                    } catch {}
+                }
+            }
+
+            const updated = await prisma.exerciseVideo.update({
+                where: { id: parsed.data.id },
+                data: {
+                    ...(exerciseName ? { exerciseName } : {}),
+                    thumbnailUrl,
+                },
+            })
+
+            res.json(updated)
+        } catch (e) {
+            if (file) {
+                try { await unlink(file.path) } catch {}
+            }
+            res.status(500).json({ error: 'Failed to update video' })
+        }
+    })
 })
