@@ -13,10 +13,36 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ComponentProps } from 'react'
+import { useRef, useState, type ComponentProps } from 'react'
 
 export function ThemeSheet({ children }: { children?: React.ReactNode }) {
     const { theme: active, setThemeId } = useTheme()
+    const themeRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+    const [activeIndex, setActiveIndex] = useState(
+        themes.findIndex((theme) => theme.id === active.id),
+    )
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+
+        e.preventDefault()
+
+        const nextIndex =
+            e.key === 'ArrowDown'
+                ? Math.min(activeIndex + 1, themes.length - 1)
+                : Math.max(activeIndex - 1, 0)
+
+        setActiveIndex(nextIndex)
+
+        const nextTheme = themes[nextIndex]
+        setThemeId(nextTheme.id)
+
+        themeRefs.current[nextIndex]?.focus()
+        themeRefs.current[nextIndex]?.scrollIntoView({
+            block: 'nearest',
+        })
+    }
 
     return (
         <Sheet>
@@ -35,18 +61,25 @@ export function ThemeSheet({ children }: { children?: React.ReactNode }) {
                     <SheetTitle>Appearance</SheetTitle>
                     <SheetDescription>Choose a theme for the app</SheetDescription>
                 </SheetHeader>
-                <div className="flex flex-col gap-2">
-                    {themes.map((theme) => {
-                        const isActive = theme.id === active.id
+                <div className="flex flex-col gap-2" onKeyDown={handleKeyDown}>
+                    {themes.map((theme, index) => {
+                        const isActive = index === activeIndex
                         const c = theme.colors
 
                         return (
                             <button
                                 key={theme.id}
+                                ref={(el) => {
+                                    themeRefs.current[index] = el
+                                }}
+                                tabIndex={isActive ? 0 : -1}
                                 type="button"
-                                onClick={() => setThemeId(theme.id)}
+                                onClick={() => {
+                                    setActiveIndex(index)
+                                    setThemeId(theme.id)
+                                }}
                                 className={cn(
-                                    'flex flex-col gap-2 rounded-xl p-3 text-left transition-colors',
+                                    'flex flex-col gap-2 rounded-xl p-3 text-left transition-colors focus:outline-none',
                                     isActive
                                         ? 'ring-2 ring-(--accent-color)'
                                         : 'ring-1 ring-border hover:bg-muted/50',

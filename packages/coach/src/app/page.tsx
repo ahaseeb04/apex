@@ -157,19 +157,6 @@ export default function Home() {
                                             {u.email}
                                         </p>
                                     </div>
-
-                                    <div className="flex items-center gap-1.5">
-                                        <Badge
-                                            variant={u.role === 'coach' ? 'default' : 'secondary'}
-                                        >
-                                            {u.role}
-                                        </Badge>
-                                        {u.emailVerified ? (
-                                            <Badge variant="outline">Verified</Badge>
-                                        ) : (
-                                            <Badge variant="secondary">Unverified</Badge>
-                                        )}
-                                    </div>
                                 </div>
                             ))}
                         </div>
