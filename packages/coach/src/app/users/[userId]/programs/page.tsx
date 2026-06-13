@@ -105,8 +105,8 @@ export default function UserProgramsPage() {
                         <LayersIcon className="size-10 text-muted-foreground/40 mb-4" />
                         <p className="text-base font-medium text-foreground">No programs yet</p>
                         <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                            {username} doesn&apos;t have any training programs. Create one to get
-                            started.
+                            {`${username} `} doesn&apos;t have any training programs. Create one to
+                            get started.
                         </p>
                     </div>
                 ) : (

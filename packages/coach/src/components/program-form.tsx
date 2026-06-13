@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -202,7 +202,6 @@ function toUpdatePayload(name: string, description: string, blocks: BlockEntry[]
 }
 
 export function ProgramForm({ userId, program }: { userId: string; program?: Program }) {
-    const router = useRouter()
     const initial = program
         ? fromProgram(program)
         : { name: '', description: '', blocks: [emptyBlock(1)] }
@@ -407,8 +406,8 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
             } else {
                 await createProgram(toCreatePayload(userId, name.trim(), description, blocks))
             }
-            router.push(`/users/${userId}/programs`)
-            router.refresh()
+
+            toast.success('Program Saved')
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to save program')
         } finally {
