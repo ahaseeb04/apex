@@ -188,3 +188,25 @@ export async function updateProgram(
 ) {
     return (await apiPatch(`/api/programs/${programId}`, body)) as Program
 }
+
+async function apiDelete(path: string) {
+    const token = getToken()
+
+    const res = await fetch(`${API_URL}${path}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data
+}
+
+export async function deleteProgram(programId: string) {
+    return (await apiDelete(`/api/programs/${programId}`)) as { message: string }
+}

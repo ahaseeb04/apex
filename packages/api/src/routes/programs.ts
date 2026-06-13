@@ -298,3 +298,33 @@ programRouter.patch('/:id', requireAuth, async (req, res) => {
 
     res.json(updated)
 })
+
+programRouter.delete('/:id', requireAuth, async (req, res) => {
+    const parsed = idParamSchema.safeParse(req.params)
+    if (!parsed.success) {
+        res.status(400).json({ error: 'invalid program id' })
+        return
+    }
+
+    const { userId: authUserId } = req as AuthenticatedRequest
+    const currentUser = await prisma.user.findUnique({ where: { id: authUserId } })
+    if (!currentUser || currentUser.role !== 'coach') {
+        res.status(403).json({ error: 'only coaches can delete programs' })
+        return
+    }
+
+    const program = await prisma.program.findUnique({
+        where: { id: parsed.data.id },
+    })
+
+    if (!program) {
+        res.status(404).json({ error: 'program not found' })
+        return
+    }
+
+    await prisma.program.delete({
+        where: { id: program.id },
+    })
+
+    res.json({ message: 'program deleted' })
+})

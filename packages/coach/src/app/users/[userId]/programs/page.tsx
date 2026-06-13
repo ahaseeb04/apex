@@ -9,11 +9,23 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { AppHeader } from '@/components/app-header'
 import { getStoredAuth, signOut } from '@/lib/auth'
-import { getPrograms } from '@/lib/api'
+import { getPrograms, deleteProgram } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
 import type { Program } from '@/lib/api'
-import { PlusIcon, LayersIcon } from 'lucide-react'
+import { PlusIcon, LayersIcon, Trash2Icon } from 'lucide-react'
 import { pluralize } from '@/lib/utils'
+import { toast } from 'sonner'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export default function UserProgramsPage() {
     const params = useParams()
@@ -115,11 +127,11 @@ export default function UserProgramsPage() {
                 ) : (
                     <div className="flex flex-col gap-4">
                         {programs.map((program) => (
-                            <Link
-                                key={program.id}
-                                href={`/users/${userId}/programs/${program.id}/edit`}
-                                className="block"
-                            >
+                            <div key={program.id} className="relative">
+                                <Link
+                                    href={`/users/${userId}/programs/${program.id}/edit`}
+                                    className="absolute inset-0 z-0"
+                                />
                                 <Card
                                     size="default"
                                     className="transition-colors hover:bg-muted/50"
@@ -142,7 +154,7 @@ export default function UserProgramsPage() {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                            <span>
+                                            <span className="relative z-0">
                                                 {pluralize(
                                                     program.blocks.reduce(
                                                         (total, block) =>
@@ -152,7 +164,7 @@ export default function UserProgramsPage() {
                                                     ['week'],
                                                 )}
                                             </span>
-                                            <span>
+                                            <span className="relative z-0">
                                                 Created{' '}
                                                 {new Date(program.createdAt).toLocaleDateString(
                                                     'en-US',
@@ -163,10 +175,43 @@ export default function UserProgramsPage() {
                                                     },
                                                 )}
                                             </span>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger className="relative z-10 cursor-pointer text-muted-foreground/50 hover:text-destructive">
+                                                    <Trash2Icon className="size-3.5" />
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Delete Program</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to delete &quot;{program.name}
+                                                            &quot;? This action cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            variant="destructive"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await deleteProgram(program.id)
+                                                                    setPrograms((prev) =>
+                                                                        prev.filter((p) => p.id !== program.id),
+                                                                    )
+                                                                    toast.success('Program deleted')
+                                                                } catch {
+                                                                    toast.error('Failed to delete program')
+                                                                }
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </CardContent>
                                 </Card>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}
