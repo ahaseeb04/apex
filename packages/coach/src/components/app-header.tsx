@@ -37,19 +37,21 @@ export function AppHeader({
                 >
                     {title}
                 </h1>
-                <span
-                    className={
-                        hideEmailOnMobile
-                            ? 'text-sm text-muted-foreground hidden sm:inline'
-                            : 'text-sm text-muted-foreground'
-                    }
-                >
-                    {email}
-                </span>
-                <ThemeSheet />
-                <Button variant="outline" onClick={onSignOut}>
-                    Sign Out
-                </Button>
+                <div className="flex-1 flex items-center justify-end gap-x-2">
+                    <span
+                        className={
+                            hideEmailOnMobile
+                                ? 'text-sm text-muted-foreground hidden sm:inline'
+                                : 'text-sm text-muted-foreground'
+                        }
+                    >
+                        {email}
+                    </span>
+                    <ThemeSheet />
+                    <Button variant="outline" onClick={onSignOut}>
+                        Sign Out
+                    </Button>
+                </div>
             </div>
         </header>
     )
