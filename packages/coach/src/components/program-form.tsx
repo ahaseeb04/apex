@@ -384,20 +384,60 @@ function ExerciseNameInput({
     )
 }
 
+function clampIdx(idx: number, arr: { length: number }) {
+    return Math.min(Math.max(0, idx), arr.length - 1)
+}
+
 export function ProgramForm({ userId, program }: { userId: string; program?: Program }) {
     const initial = program
         ? fromProgram(program)
         : { name: '', description: '', blocks: [emptyBlock(1)] }
 
+    const storageKey = program ? `program-${program.id}` : null
+    const saved = storageKey
+        ? (() => {
+              try {
+                  const raw = localStorage.getItem(storageKey)
+                  if (raw) return JSON.parse(raw) as { b: number; w: number; d: number }
+              } catch {
+                  // ignore
+              }
+              return null
+          })()
+        : null
+
     const [name, setName] = useState(initial.name)
     const [description, setDescription] = useState(initial.description)
     const [blocks, setBlocks] = useState<BlockEntry[]>(initial.blocks)
-    const [selectedBlockIdx, setSelectedBlockIdx] = useState(0)
-    const [selectedWeekIdx, setSelectedWeekIdx] = useState(0)
-    const [selectedDayIdx, setSelectedDayIdx] = useState(0)
+    const [selectedBlockIdx, setSelectedBlockIdx] = useState(() =>
+        saved ? clampIdx(saved.b, initial.blocks) : 0,
+    )
+    const [selectedWeekIdx, setSelectedWeekIdx] = useState(() => {
+        if (!saved) return 0
+        const block = initial.blocks[saved.b]
+        return block ? clampIdx(saved.w, block.weeks) : 0
+    })
+    const [selectedDayIdx, setSelectedDayIdx] = useState(() => {
+        if (!saved) return 0
+        const block = initial.blocks[saved.b]
+        const week = block?.weeks[saved.w]
+        return week ? clampIdx(saved.d, week.days) : 0
+    })
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const exerciseNames = useExerciseNames()
+
+    useEffect(() => {
+        if (!storageKey) return
+        try {
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify({ b: selectedBlockIdx, w: selectedWeekIdx, d: selectedDayIdx }),
+            )
+        } catch {
+            // ignore
+        }
+    }, [storageKey, selectedBlockIdx, selectedWeekIdx, selectedDayIdx])
 
     const selectedBlock = blocks[selectedBlockIdx]
     const selectedWeek = selectedBlock?.weeks[selectedWeekIdx]
@@ -957,20 +997,17 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                       (a, b) => a + b,
                                                       0,
                                                   )
-                                                  const raw =
-                                                      Math.round((sum / 245) * 1000) / 1000
-                                                  const pct = isNaN(raw) || !isFinite(raw)
-                                                      ? 0
-                                                      : Math.round(raw * 100 * 10) / 10
+                                                  const raw = Math.round((sum / 245) * 1000) / 1000
+                                                  const pct =
+                                                      isNaN(raw) || !isFinite(raw)
+                                                          ? 0
+                                                          : Math.round(raw * 100 * 10) / 10
                                                   return pct
                                               })()
                                             : null
 
                                         return (
-                                            <AccordionItem
-                                                key={week._key}
-                                                value={week._key}
-                                            >
+                                            <AccordionItem key={week._key} value={week._key}>
                                                 <AccordionTrigger className="px-4 hover:no-underline">
                                                     <div className="flex flex-1 items-center justify-between gap-4">
                                                         <span className="font-medium">
