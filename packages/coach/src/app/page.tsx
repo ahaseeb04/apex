@@ -107,7 +107,7 @@ export default function Home() {
     if (user) {
         return (
             <div className="flex min-h-screen flex-col bg-background">
-                <AppHeader title="Users" onSignOut={handleSignOut} />
+                <AppHeader title="Users" email={user.email} onSignOut={handleSignOut} />
 
                 <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
                     <div className="mb-4">

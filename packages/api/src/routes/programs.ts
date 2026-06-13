@@ -90,3 +90,211 @@ programRouter.get('/:id', requireAuth, async (req, res) => {
 
     res.json(program)
 })
+
+const exerciseSchema = z.object({
+    name: z.string().min(1),
+    sets: z.number().int().min(0),
+    reps: z.number().int().min(0),
+    expectedRpe: z.number().nullable().optional(),
+    loadRange: z.string().nullable().optional(),
+    order: z.number().int().min(0),
+})
+
+const daySchema = z.object({
+    dayNumber: z.number().int().min(1),
+    exercises: z.array(exerciseSchema),
+})
+
+const weekSchema = z.object({
+    weekNumber: z.number().int().min(1),
+    coachNotesForUser: z.string().nullable().optional(),
+    days: z.array(daySchema),
+})
+
+const blockSchema = z.object({
+    name: z.string().min(1),
+    order: z.number().int().min(0),
+    weeks: z.array(weekSchema),
+})
+
+const createProgramSchema = z.object({
+    userId: z.string().uuid(),
+    name: z.string().min(1),
+    description: z.string().nullable().optional(),
+    blocks: z.array(blockSchema),
+})
+
+const updateProgramSchema = z.object({
+    name: z.string().min(1),
+    description: z.string().nullable().optional(),
+    blocks: z.array(blockSchema),
+})
+
+const programInclude = {
+    blocks: {
+        orderBy: { order: 'asc' as const },
+        include: {
+            weeks: {
+                orderBy: { weekNumber: 'asc' as const },
+                include: {
+                    days: {
+                        orderBy: { dayNumber: 'asc' as const },
+                        include: {
+                            exercises: {
+                                orderBy: { order: 'asc' as const },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
+
+programRouter.post('/', requireAuth, async (req, res) => {
+    const parsed = createProgramSchema.safeParse(req.body)
+    if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.flatten().fieldErrors })
+        return
+    }
+
+    const { userId: authUserId } = req as AuthenticatedRequest
+    const currentUser = await prisma.user.findUnique({ where: { id: authUserId } })
+    if (!currentUser || currentUser.role !== 'coach') {
+        res.status(403).json({ error: 'only coaches can create programs' })
+        return
+    }
+
+    const { userId: targetUserId, name, description, blocks: blocksData } = parsed.data
+
+    const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } })
+    if (!targetUser) {
+        res.status(404).json({ error: 'user not found' })
+        return
+    }
+
+    const program = await prisma.program.create({
+        data: {
+            name,
+            description: description ?? null,
+            userId: targetUserId,
+            blocks: {
+                create: blocksData.map((block) => ({
+                    name: block.name,
+                    order: block.order,
+                    userId: authUserId,
+                    weeks: {
+                        create: block.weeks.map((week) => ({
+                            weekNumber: week.weekNumber,
+                            coachNotesForUser: week.coachNotesForUser ?? null,
+                            userId: authUserId,
+                            days: {
+                                create: week.days.map((day) => ({
+                                    dayNumber: day.dayNumber,
+                                    userId: authUserId,
+                                    exercises: {
+                                        create: day.exercises.map((exercise) => ({
+                                            name: exercise.name,
+                                            sets: exercise.sets,
+                                            reps: exercise.reps,
+                                            expectedRpe: exercise.expectedRpe ?? null,
+                                            loadRange: exercise.loadRange ?? null,
+                                            order: exercise.order,
+                                            userId: authUserId,
+                                        })),
+                                    },
+                                })),
+                            },
+                        })),
+                    },
+                })),
+            },
+        },
+        include: programInclude,
+    })
+
+    res.status(201).json(program)
+})
+
+programRouter.patch('/:id', requireAuth, async (req, res) => {
+    const idParsed = idParamSchema.safeParse(req.params)
+    if (!idParsed.success) {
+        res.status(400).json({ error: 'invalid program id' })
+        return
+    }
+
+    const bodyParsed = updateProgramSchema.safeParse(req.body)
+    if (!bodyParsed.success) {
+        res.status(400).json({ error: bodyParsed.error.flatten().fieldErrors })
+        return
+    }
+
+    const { userId: authUserId } = req as AuthenticatedRequest
+    const currentUser = await prisma.user.findUnique({ where: { id: authUserId } })
+    if (!currentUser || currentUser.role !== 'coach') {
+        res.status(403).json({ error: 'only coaches can update programs' })
+        return
+    }
+
+    const program = await prisma.program.findUnique({
+        where: { id: idParsed.data.id },
+    })
+
+    if (!program) {
+        res.status(404).json({ error: 'program not found' })
+        return
+    }
+
+    const { name, description, blocks: blocksData } = bodyParsed.data
+
+    await prisma.$transaction([
+        prisma.exercise.deleteMany({
+            where: { day: { week: { block: { programId: program.id } } } },
+        }),
+        prisma.day.deleteMany({ where: { week: { block: { programId: program.id } } } }),
+        prisma.week.deleteMany({ where: { block: { programId: program.id } } }),
+        prisma.block.deleteMany({ where: { programId: program.id } }),
+    ])
+
+    const updated = await prisma.program.update({
+        where: { id: program.id },
+        data: {
+            name,
+            description: description ?? null,
+            blocks: {
+                create: blocksData.map((block) => ({
+                    name: block.name,
+                    order: block.order,
+                    userId: authUserId,
+                    weeks: {
+                        create: block.weeks.map((week) => ({
+                            weekNumber: week.weekNumber,
+                            coachNotesForUser: week.coachNotesForUser ?? null,
+                            userId: authUserId,
+                            days: {
+                                create: week.days.map((day) => ({
+                                    dayNumber: day.dayNumber,
+                                    userId: authUserId,
+                                    exercises: {
+                                        create: day.exercises.map((exercise) => ({
+                                            name: exercise.name,
+                                            sets: exercise.sets,
+                                            reps: exercise.reps,
+                                            expectedRpe: exercise.expectedRpe ?? null,
+                                            loadRange: exercise.loadRange ?? null,
+                                            order: exercise.order,
+                                            userId: authUserId,
+                                        })),
+                                    },
+                                })),
+                            },
+                        })),
+                    },
+                })),
+            },
+        },
+        include: programInclude,
+    })
+
+    res.json(updated)
+})

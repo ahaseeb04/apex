@@ -11,6 +11,41 @@ export interface User {
     createdAt: string
 }
 
+export interface ExerciseData {
+    id: string
+    name: string
+    sets: number
+    reps: number
+    expectedRpe: number | null
+    loadRange: string | null
+    loadActual: number | null
+    rpeActual: number | null
+    order: number
+}
+
+export interface DayData {
+    id: string
+    dayNumber: number
+    exercises: ExerciseData[]
+}
+
+export interface WeekData {
+    id: string
+    weekNumber: number
+    fatigueIndex: unknown | null
+    weeklyCheckIn: unknown | null
+    userNotesForCoach: string | null
+    coachNotesForUser: string | null
+    days: DayData[]
+}
+
+export interface BlockData {
+    id: string
+    name: string
+    order: number
+    weeks: WeekData[]
+}
+
 export interface Program {
     id: string
     name: string
@@ -18,16 +53,7 @@ export interface Program {
     userId: string
     createdAt: string
     updatedAt: string
-    blocks: {
-        id: string
-        name: string
-        order: number
-        weeks: {
-            id: string
-            weekNumber: number
-            days: unknown[]
-        }[]
-    }[]
+    blocks: BlockData[]
 }
 
 function getToken(): string | null {
@@ -52,6 +78,44 @@ async function apiGet(path: string) {
     return data
 }
 
+async function apiPost(path: string, body: unknown) {
+    const token = getToken()
+
+    const res = await fetch(`${API_URL}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data
+}
+
+async function apiPatch(path: string, body: unknown) {
+    const token = getToken()
+
+    const res = await fetch(`${API_URL}${path}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data
+}
+
 export async function getUsers() {
     return (await apiGet('/api/users')) as User[]
 }
@@ -59,4 +123,68 @@ export async function getUsers() {
 export async function getPrograms(userId?: string) {
     const path = userId ? `/api/programs?userId=${encodeURIComponent(userId)}` : '/api/programs'
     return (await apiGet(path)) as Program[]
+}
+
+export async function getProgram(programId: string) {
+    return (await apiGet(`/api/programs/${programId}`)) as Program
+}
+
+export async function createProgram(body: {
+    userId: string
+    name: string
+    description: string | null
+    blocks: {
+        name: string
+        order: number
+        weeks: {
+            weekNumber: number
+            coachNotesForUser: string | null
+            days: {
+                dayNumber: number
+                exercises: {
+                    name: string
+                    sets: number
+                    reps: number
+                    expectedRpe: number | null
+                    loadRange: string | null
+                    order: number
+                }[]
+            }[]
+        }[]
+    }[]
+}) {
+    return (await apiPost('/api/programs', body)) as Program
+}
+
+export async function updateProgram(
+    programId: string,
+    body: {
+        name: string
+        description: string | null
+        blocks: {
+            id?: string
+            name: string
+            order: number
+            weeks: {
+                id?: string
+                weekNumber: number
+                coachNotesForUser: string | null
+                days: {
+                    id?: string
+                    dayNumber: number
+                    exercises: {
+                        id?: string
+                        name: string
+                        sets: number
+                        reps: number
+                        expectedRpe: number | null
+                        loadRange: string | null
+                        order: number
+                    }[]
+                }[]
+            }[]
+        }[]
+    },
+) {
+    return (await apiPatch(`/api/programs/${programId}`, body)) as Program
 }

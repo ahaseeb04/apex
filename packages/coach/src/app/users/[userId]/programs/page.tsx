@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -78,6 +79,7 @@ export default function UserProgramsPage() {
         <div className="flex min-h-screen flex-col bg-background">
             <AppHeader
                 title={`${username}'s Programs`}
+                email={user.email}
                 onSignOut={handleSignOut}
                 backHref="/"
                 hideEmailOnMobile
@@ -85,9 +87,11 @@ export default function UserProgramsPage() {
 
             <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
                 <div className="mb-6 flex justify-end">
-                    <Button className="w-full sm:w-auto" size="sm">
-                        <PlusIcon className="size-4" />
-                        New Program
+                    <Button className="w-full sm:w-auto" size="sm" asChild>
+                        <Link href={`/users/${userId}/programs/new`}>
+                            <PlusIcon className="size-4" />
+                            New Program
+                        </Link>
                     </Button>
                 </div>
 
@@ -100,53 +104,59 @@ export default function UserProgramsPage() {
                         <LayersIcon className="size-10 text-muted-foreground/40 mb-4" />
                         <p className="text-base font-medium text-foreground">No programs yet</p>
                         <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                            {`${username} `} doesn't have any training programs. Create one to get
+                            {username} doesn&apos;t have any training programs. Create one to get
                             started.
                         </p>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
                         {programs.map((program) => (
-                            <Card key={program.id} size="default">
-                                <CardHeader>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <CardTitle className="truncate font-bold">
-                                            {program.name}
-                                        </CardTitle>
-                                        <Badge variant="secondary" className="shrink-0">
-                                            {program.blocks.length}{' '}
-                                            {program.blocks.length === 1 ? 'block' : 'blocks'}
-                                        </Badge>
-                                    </div>
-                                    {program.description ? (
-                                        <CardDescription className="line-clamp-2">
-                                            {program.description}
-                                        </CardDescription>
-                                    ) : null}
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span>
-                                            {program.blocks.reduce(
-                                                (total, block) => total + block.weeks.length,
-                                                0,
-                                            )}{' '}
-                                            weeks
-                                        </span>
-                                        <span>
-                                            Created{' '}
-                                            {new Date(program.createdAt).toLocaleDateString(
-                                                'en-US',
-                                                {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric',
-                                                },
-                                            )}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <Link
+                                key={program.id}
+                                href={`/users/${userId}/programs/${program.id}/edit`}
+                                className="block"
+                            >
+                                <Card size="default" className="transition-colors hover:bg-muted/50">
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <CardTitle className="truncate font-bold">
+                                                {program.name}
+                                            </CardTitle>
+                                            <Badge variant="secondary" className="shrink-0">
+                                                {program.blocks.length}{' '}
+                                                {program.blocks.length === 1 ? 'block' : 'blocks'}
+                                            </Badge>
+                                        </div>
+                                        {program.description ? (
+                                            <CardDescription className="line-clamp-2">
+                                                {program.description}
+                                            </CardDescription>
+                                        ) : null}
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                            <span>
+                                                {program.blocks.reduce(
+                                                    (total, block) => total + block.weeks.length,
+                                                    0,
+                                                )}{' '}
+                                                weeks
+                                            </span>
+                                            <span>
+                                                Created{' '}
+                                                {new Date(program.createdAt).toLocaleDateString(
+                                                    'en-US',
+                                                    {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    },
+                                                )}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
                 )}
