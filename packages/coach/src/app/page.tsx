@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { ThemeSheet } from '@/components/theme-sheet'
+import { AppHeader } from '@/components/app-header'
 import { signIn, ApiError, getStoredAuth, signOut } from '@/lib/auth'
 import { getUsers } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
@@ -107,18 +107,7 @@ export default function Home() {
     if (user) {
         return (
             <div className="flex min-h-screen flex-col bg-background">
-                <header className="sticky top-0 z-10 border-b border-border bg-background">
-                    <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-6">
-                        <h1 className="text-base font-semibold tracking-tight">Users</h1>
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm text-muted-foreground">{user.email}</span>
-                            <ThemeSheet />
-                            <Button variant="outline" onClick={handleSignOut}>
-                                Sign Out
-                            </Button>
-                        </div>
-                    </div>
-                </header>
+                <AppHeader title="Users" onSignOut={handleSignOut} />
 
                 <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
                     <div className="mb-4">

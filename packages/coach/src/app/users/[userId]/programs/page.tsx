@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { ThemeSheet } from '@/components/theme-sheet'
+import { AppHeader } from '@/components/app-header'
 import { getStoredAuth, signOut } from '@/lib/auth'
 import { getPrograms } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
 import type { Program } from '@/lib/api'
-import { ArrowLeftIcon, PlusIcon, LayersIcon } from 'lucide-react'
+import { PlusIcon, LayersIcon } from 'lucide-react'
 
 export default function UserProgramsPage() {
     const params = useParams()
@@ -76,23 +76,12 @@ export default function UserProgramsPage() {
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
-            <header className="sticky top-0 z-10 border-b border-border bg-background">
-                <div className="mx-auto flex h-16 max-w-2xl items-center gap-4 px-6">
-                    <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
-                        <ArrowLeftIcon className="size-4" />
-                    </Button>
-                    <h1 className="flex-1 text-base font-semibold tracking-tight truncate">
-                        {username}&apos;s Programs
-                    </h1>
-                    <span className="text-sm text-muted-foreground hidden sm:inline">
-                        {user.email}
-                    </span>
-                    <ThemeSheet />
-                    <Button variant="outline" onClick={handleSignOut}>
-                        Sign Out
-                    </Button>
-                </div>
-            </header>
+            <AppHeader
+                title={`${username}'s Programs`}
+                onSignOut={handleSignOut}
+                backHref="/"
+                hideEmailOnMobile
+            />
 
             <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
                 <div className="mb-6 flex justify-end">
