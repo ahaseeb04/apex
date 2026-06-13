@@ -79,7 +79,7 @@ export default function EditProgramPage() {
     return (
         <div className="flex min-h-screen flex-col bg-background">
             <AppHeader
-                title="Edit Program"
+                title={`Edit "${program.name}"`}
                 email={user.email}
                 onSignOut={handleSignOut}
                 backHref={`/users/${userId}/programs`}
