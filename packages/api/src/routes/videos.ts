@@ -10,7 +10,7 @@ import path from 'node:path'
 
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
-import { uploadToR2 } from '../lib/r2'
+import { uploadToR2, deleteFromR2 } from '../lib/r2'
 
 const execFileAsync = promisify(execFile)
 
@@ -36,6 +36,18 @@ const upload = multer({
 
 async function generateThumbnail(videoPath: string, outputPath: string): Promise<void> {
     await execFileAsync('ffmpeg', ['-i', videoPath, '-vframes', '1', '-q:v', '2', '-y', outputPath])
+}
+
+function extractKey(url: string): string {
+    const { pathname } = new URL(url)
+    const bucket = process.env.R2_BUCKET_NAME!
+    const bucketPrefix = `/${bucket}/`
+
+    if (pathname.startsWith(bucketPrefix)) {
+        return pathname.slice(bucketPrefix.length)
+    }
+
+    return pathname.slice(1)
 }
 
 videoRouter.post('/', requireAuth, (req, res, next) => {
@@ -95,7 +107,7 @@ videoRouter.post('/', requireAuth, (req, res, next) => {
             try {
                 await unlink(file.path)
             } catch {}
-            res.status(500).json({ error: e })
+            res.status(500).json({ error: 'Failed to upload video' })
         }
     })
 })
@@ -133,6 +145,18 @@ videoRouter.delete('/:id', requireAuth, async (req, res) => {
     if (!video) {
         res.status(404).json({ error: 'Video not found' })
         return
+    }
+
+    const videoKey = extractKey(video.videoUrl)
+    try {
+        await deleteFromR2(videoKey)
+    } catch {}
+
+    if (video.thumbnailUrl) {
+        const thumbnailKey = extractKey(video.thumbnailUrl)
+        try {
+            await deleteFromR2(thumbnailKey)
+        } catch {}
     }
 
     await prisma.exerciseVideo.delete({

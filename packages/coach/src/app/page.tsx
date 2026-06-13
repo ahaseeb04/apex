@@ -28,7 +28,17 @@ export default function Home() {
     const [users, setUsers] = useState<User[]>([])
     const [usersLoading, setUsersLoading] = useState(false)
     const [search, setSearch] = useState('')
-    const [activeTab, setActiveTab] = useState('users')
+    const [activeTab, setActiveTab] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('tab') || 'users'
+        }
+        return 'users'
+    })
+
+    function handleTabChange(tab: string) {
+        setActiveTab(tab)
+        localStorage.setItem('tab', tab)
+    }
 
     useEffect(() => {
         startTransition(() => {
@@ -111,24 +121,24 @@ export default function Home() {
             <div className="flex min-h-screen flex-col bg-background">
                 <header className="sticky top-0 z-10 border-b border-border bg-background">
                     <div className="mx-auto flex h-16 max-w-2xl items-center gap-4 px-6">
-                        <Tabs
-                            value={activeTab}
-                            onValueChange={setActiveTab}
-                            className="flex-1"
-                        >
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
                             <TabsList variant="line">
-                                <TabsTrigger value="users" className="text-base font-semibold tracking-tight">
+                                <TabsTrigger
+                                    value="users"
+                                    className="text-base font-semibold tracking-tight"
+                                >
                                     Users
                                 </TabsTrigger>
-                                <TabsTrigger value="videos" className="text-base font-semibold tracking-tight">
+                                <TabsTrigger
+                                    value="videos"
+                                    className="text-base font-semibold tracking-tight"
+                                >
                                     Videos
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <div className="flex items-center justify-end gap-x-2">
-                            <span className="text-sm text-muted-foreground">
-                                {user.email}
-                            </span>
+                            <span className="text-sm text-muted-foreground">{user.email}</span>
                             <ThemeSheet />
                             <Button variant="outline" onClick={handleSignOut}>
                                 Sign Out

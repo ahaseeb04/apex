@@ -10,6 +10,14 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+} from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { ExerciseNameInput, useExerciseNames } from '@/components/exercise-name-input'
 import { uploadVideo, getVideos, deleteVideo, type ExerciseVideo } from '@/lib/api'
@@ -101,14 +109,6 @@ export function VideoUploadForm() {
         }
     }
 
-    const groupedVideos = videos.reduce(
-        (acc, v) => {
-            ;(acc[v.exerciseName] ??= []).push(v)
-            return acc
-        },
-        {} as Record<string, ExerciseVideo[]>,
-    )
-
     return (
         <div className="space-y-10">
             <Card>
@@ -182,15 +182,15 @@ export function VideoUploadForm() {
                                     <UploadIcon
                                         className={cn(
                                             'size-6 transition-colors',
-                                            dragOver
-                                                ? 'text-primary'
-                                                : 'text-muted-foreground',
+                                            dragOver ? 'text-primary' : 'text-muted-foreground',
                                         )}
                                     />
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-medium">
-                                        {dragOver ? 'Drop to upload' : 'Drop video here or click to browse'}
+                                        {dragOver
+                                            ? 'Drop to upload'
+                                            : 'Drop video here or click to browse'}
                                     </p>
                                     <p className="mt-1 text-xs text-muted-foreground">
                                         MP4, WebM, MOV &middot; Up to 500 MB
@@ -221,7 +221,7 @@ export function VideoUploadForm() {
                         ) : (
                             <>
                                 <UploadIcon className="size-4" />
-                                Upload Video
+                                Upload
                             </>
                         )}
                     </Button>
@@ -243,17 +243,34 @@ export function VideoUploadForm() {
 
                 <div className="mt-6">
                     {loadingVideos ? (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <Card key={i} size="sm">
-                                    <Skeleton className="aspect-video w-full rounded-t-lg" />
-                                    <CardContent className="space-y-2">
-                                        <Skeleton className="h-4 w-3/4" />
-                                        <Skeleton className="h-3 w-1/2" />
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-16">Thumbnail</TableHead>
+                                    <TableHead>Exercise</TableHead>
+                                    <TableHead>Uploaded</TableHead>
+                                    <TableHead className="w-16">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell>
+                                            <Skeleton className="aspect-video w-12 rounded" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-4 w-36" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-3 w-24" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-6 w-6 rounded" />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     ) : videos.length === 0 ? (
                         <Card className="border-dashed">
                             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -267,72 +284,64 @@ export function VideoUploadForm() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="space-y-6">
-                            {Object.entries(groupedVideos).map(
-                                ([exercise, exerciseVideos]) => (
-                                    <div key={exercise}>
-                                        <h3 className="mb-3 text-sm font-medium">{exercise}</h3>
-                                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                            {exerciseVideos.map((video) => (
-                                                <Card
-                                                    key={video.id}
-                                                    size="sm"
-                                                    className="group overflow-hidden transition-shadow hover:shadow-md"
-                                                >
-                                                    <div className="relative aspect-video bg-muted">
-                                                        {video.thumbnailUrl ? (
-                                                            <img
-                                                                src={video.thumbnailUrl}
-                                                                alt={video.exerciseName}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="flex h-full items-center justify-center">
-                                                                <FileVideoIcon className="size-10 text-muted-foreground/30" />
-                                                            </div>
-                                                        )}
-                                                        <a
-                                                            href={video.videoUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/30 group-hover:opacity-100"
-                                                        >
-                                                            <div className="flex size-10 items-center justify-center rounded-full bg-white/90 shadow-lg">
-                                                                <PlayIcon className="size-4 fill-black text-black" />
-                                                            </div>
-                                                        </a>
-                                                    </div>
-                                                    <CardContent className="flex items-center justify-between gap-2">
-                                                        <div className="min-w-0">
-                                                            <p className="truncate text-xs text-muted-foreground">
-                                                                {new Date(
-                                                                    video.createdAt,
-                                                                ).toLocaleDateString('en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                    year: 'numeric',
-                                                                })}
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon-xs"
-                                                            disabled={deletingId === video.id}
-                                                            className="shrink-0 text-muted-foreground/40 hover:text-destructive"
-                                                            onClick={() =>
-                                                                handleDelete(video.id)
-                                                            }
-                                                        >
-                                                            <XIcon className="size-3" />
-                                                        </Button>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ),
-                            )}
-                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-16">Thumbnail</TableHead>
+                                    <TableHead>Exercise</TableHead>
+                                    <TableHead>Uploaded</TableHead>
+                                    <TableHead className="w-16">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {videos.map((video) => (
+                                    <TableRow key={video.id}>
+                                        <TableCell>
+                                            {video.thumbnailUrl ? (
+                                                <img
+                                                    src={video.thumbnailUrl}
+                                                    alt={video.exerciseName}
+                                                    className="aspect-video w-12 rounded object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex aspect-video w-12 items-center justify-center rounded bg-muted">
+                                                    <FileVideoIcon className="size-4 text-muted-foreground/30" />
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="font-medium">
+                                            <a
+                                                href={video.videoUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 hover:underline"
+                                            >
+                                                {video.exerciseName}
+                                                <PlayIcon className="size-3 text-muted-foreground" />
+                                            </a>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {new Date(video.createdAt).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-xs"
+                                                disabled={deletingId === video.id}
+                                                className="text-muted-foreground/40 hover:text-destructive"
+                                                onClick={() => handleDelete(video.id)}
+                                            >
+                                                <XIcon className="size-3" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     )}
                 </div>
             </div>
