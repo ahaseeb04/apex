@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { toast } from 'sonner'
-import { PencilIcon, UploadIcon, XIcon, LinkIcon } from 'lucide-react'
+import { PencilIcon, UploadIcon, XIcon, LinkIcon, FileVideoIcon, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -31,7 +31,7 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
     const [thumbnailUrl, setThumbnailUrl] = useState('')
     const [saving, setSaving] = useState(false)
-    const [thumbnailMode, setThumbnailMode] = useState<'upload' | 'url'>('upload')
+    const [thumbnailMode, setThumbnailMode] = useState<'current' | 'upload' | 'url'>('current')
     const [dragOver, setDragOver] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -131,6 +131,19 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                             <div className="inline-flex rounded-md border border-border bg-muted p-0.5">
                                 <button
                                     type="button"
+                                    onClick={() => setThumbnailMode('current')}
+                                    className={cn(
+                                        'inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors',
+                                        thumbnailMode === 'current'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground',
+                                    )}
+                                >
+                                    <ImageIcon className="size-3" />
+                                    Current
+                                </button>
+                                <button
+                                    type="button"
                                     onClick={() => setThumbnailMode('upload')}
                                     className={cn(
                                         'inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors',
@@ -157,7 +170,22 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                                 </button>
                             </div>
                         </div>
-                        {thumbnailMode === 'upload' ? (
+                        {thumbnailMode === 'current' ? (
+                            video.thumbnailUrl ? (
+                                <img
+                                    src={video.thumbnailUrl}
+                                    alt={video.exerciseName}
+                                    className="aspect-video w-full rounded-lg border object-cover"
+                                />
+                            ) : (
+                                <div className="flex aspect-video w-full items-center justify-center rounded-lg border border-dashed bg-muted">
+                                    <div className="text-center">
+                                        <FileVideoIcon className="mx-auto size-8 text-muted-foreground/30" />
+                                        <p className="mt-1 text-xs text-muted-foreground">No thumbnail set</p>
+                                    </div>
+                                </div>
+                            )
+                        ) : thumbnailMode === 'upload' ? (
                             thumbnailFile ? (
                                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3.5">
                                     <div className="min-w-0 flex-1">
@@ -239,7 +267,11 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                         disabled={
                             saving ||
                             (exerciseName.trim() === video.exerciseName &&
-                                (thumbnailMode === 'upload' ? !thumbnailFile : !thumbnailUrl.trim()))
+                                (thumbnailMode === 'current'
+                                    ? true
+                                    : thumbnailMode === 'upload'
+                                      ? !thumbnailFile
+                                      : !thumbnailUrl.trim()))
                         }
                     >
                         {saving ? (
