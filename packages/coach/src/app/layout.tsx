@@ -1,19 +1,21 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Inter } from 'next/font/google'
+import { Geist, Geist_Mono, Inter, Google_Sans } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/sonner'
+import { FontProvider } from '@/hooks/use-font'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
-const geistSans = Geist({
-    variable: '--font-geist-sans',
+const googleSans = Google_Sans({
     subsets: ['latin'],
+    variable: '--font-google-sans',
+    weight: ['400', '500', '600', '700'],
 })
 
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
+const geistSans = Geist({
+    variable: '--font-geist-sans',
     subsets: ['latin'],
 })
 
@@ -35,14 +37,16 @@ export default function RootLayout({
                 'h-full',
                 'antialiased',
                 geistSans.variable,
-                geistMono.variable,
                 'font-sans',
                 inter.variable,
+                googleSans.variable,
             )}
         >
             <body className="min-h-full flex flex-col">
-                <Providers>{children}</Providers>
-                <Toaster />
+                <FontProvider>
+                    <Providers>{children}</Providers>
+                    <Toaster />
+                </FontProvider>
             </body>
         </html>
     )

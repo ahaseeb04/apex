@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Spinner } from '@/components/ui/spinner'
 import { ThemeSheet } from '@/components/theme-sheet'
+import { FontSheet } from '@/components/font-sheet'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { VideoUploadForm } from '@/components/video-upload-form'
 import { signIn, ApiError, getStoredAuth, signOut } from '@/lib/auth'
@@ -139,6 +140,7 @@ export default function Home() {
                         </Tabs>
                         <div className="flex items-center justify-end gap-x-2">
                             <span className="text-sm text-muted-foreground">{user.email}</span>
+                            <FontSheet />
                             <ThemeSheet />
                             <Button variant="outline" onClick={handleSignOut}>
                                 Sign Out
