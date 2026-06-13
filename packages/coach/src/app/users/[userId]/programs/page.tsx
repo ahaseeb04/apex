@@ -13,6 +13,7 @@ import { getPrograms } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
 import type { Program } from '@/lib/api'
 import { PlusIcon, LayersIcon } from 'lucide-react'
+import { pluralize } from '@/lib/utils'
 
 export default function UserProgramsPage() {
     const params = useParams()
@@ -116,7 +117,10 @@ export default function UserProgramsPage() {
                                 href={`/users/${userId}/programs/${program.id}/edit`}
                                 className="block"
                             >
-                                <Card size="default" className="transition-colors hover:bg-muted/50">
+                                <Card
+                                    size="default"
+                                    className="transition-colors hover:bg-muted/50"
+                                >
                                     <CardHeader>
                                         <div className="flex items-center justify-between gap-2">
                                             <CardTitle className="truncate font-bold">
@@ -136,11 +140,14 @@ export default function UserProgramsPage() {
                                     <CardContent>
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                             <span>
-                                                {program.blocks.reduce(
-                                                    (total, block) => total + block.weeks.length,
-                                                    0,
-                                                )}{' '}
-                                                weeks
+                                                {pluralize(
+                                                    program.blocks.reduce(
+                                                        (total, block) =>
+                                                            total + block.weeks.length,
+                                                        0,
+                                                    ),
+                                                    ['week'],
+                                                )}
                                             </span>
                                             <span>
                                                 Created{' '}
