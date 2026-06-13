@@ -486,7 +486,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
 
                         <SectionLabel>Week & Day</SectionLabel>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 items-center">
                                 <Select
                                     value={String(selectedWeekIdx)}
                                     onValueChange={(v) => {
@@ -530,7 +530,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                             </div>
 
                             {selectedWeek && (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
                                     <Select
                                         value={String(selectedDayIdx)}
                                         onValueChange={(v) => setSelectedDayIdx(Number(v))}
@@ -598,7 +598,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                     Actual
                                                 </th>
                                                 <th className="h-9 w-12 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    rRPE
+                                                    RPE
                                                 </th>
                                                 <th className="h-9 w-10" />
                                             </tr>
@@ -687,7 +687,9 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                         {ex.loadActual || '\u2014'}
                                                     </td>
                                                     <td className="p-1 text-center text-sm tabular-nums text-muted-foreground">
-                                                        {ex.rpeActual ? `@${ex.rpeActual}` : '\u2014'}
+                                                        {ex.rpeActual
+                                                            ? `@${ex.rpeActual}`
+                                                            : '\u2014'}
                                                     </td>
                                                     <td className="p-2">
                                                         <Button

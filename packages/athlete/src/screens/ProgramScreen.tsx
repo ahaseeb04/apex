@@ -537,9 +537,14 @@ function TableHeader({ label, className }: { label: string; className: string })
 
 function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boolean }) {
     const c = useActiveTheme().colors
+    const loadRef = useRef(exercise.loadActual != null ? String(exercise.loadActual) : '')
+    const rpeRef = useRef(exercise.rpeActual != null ? String(exercise.rpeActual) : '')
+    const loadTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const rpeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const saveExercise = useCallback(
-        async (field: 'loadActual' | 'rpeActual', value: string) => {
+        async (field: 'loadActual' | 'rpeActual') => {
+            const value = field === 'loadActual' ? loadRef.current : rpeRef.current
             const num = value.trim() ? Number(value) : null
             if (num != null && isNaN(num)) return
             try {
@@ -551,6 +556,15 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
             }
         },
         [exercise.id],
+    )
+
+    const debouncedSave = useCallback(
+        (field: 'loadActual' | 'rpeActual') => {
+            const timerRef = field === 'loadActual' ? loadTimer : rpeTimer
+            if (timerRef.current) clearTimeout(timerRef.current)
+            timerRef.current = setTimeout(() => saveExercise(field), 500)
+        },
+        [saveExercise],
     )
 
     return (
@@ -582,7 +596,10 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
                 cursorColor={c.accent}
                 selectionColor={c.accent}
                 defaultValue={exercise.loadActual != null ? String(exercise.loadActual) : ''}
-                onEndEditing={(e) => saveExercise('loadActual', e.nativeEvent.text)}
+                onChangeText={(text) => {
+                    loadRef.current = text
+                    debouncedSave('loadActual')
+                }}
             />
             <TextInput
                 className="text-[13px] rounded-lg w-[42px] text-center py-1.5 ml-2"
@@ -593,7 +610,10 @@ function ExerciseRow({ exercise, isLast }: { exercise: ExerciseData; isLast: boo
                 cursorColor={c.accent}
                 selectionColor={c.accent}
                 defaultValue={exercise.rpeActual != null ? String(exercise.rpeActual) : ''}
-                onEndEditing={(e) => saveExercise('rpeActual', e.nativeEvent.text)}
+                onChangeText={(text) => {
+                    rpeRef.current = text
+                    debouncedSave('rpeActual')
+                }}
             />
         </View>
     )
