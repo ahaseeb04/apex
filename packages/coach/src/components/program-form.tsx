@@ -323,7 +323,7 @@ function ExerciseNameInput({
                 onChange={(e) => onChange(e.target.value)}
                 onFocus={handleFocus}
                 placeholder="Exercise name"
-                className="h-8 border-0 px-1 text-sm shadow-none focus-visible:ring-0"
+                className="h-8 border-0 px-1 text-sm shadow-none focus-visible:ring-0 bg-transparent!"
             />
             {showDropdown &&
                 rect &&
