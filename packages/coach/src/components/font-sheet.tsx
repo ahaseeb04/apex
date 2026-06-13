@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { Check, TypeIcon } from 'lucide-react'
 import { useFont, fonts, type FontId } from '@/hooks/use-font'
 import {
@@ -15,6 +16,32 @@ import { cn } from '@/lib/utils'
 
 export function FontSheet() {
     const { font: active, setFontId } = useFont()
+    const fontRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+    const [activeIndex, setActiveIndex] = useState(
+        fonts.findIndex((f) => f.id === active.id),
+    )
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+
+        e.preventDefault()
+
+        const nextIndex =
+            e.key === 'ArrowDown'
+                ? Math.min(activeIndex + 1, fonts.length - 1)
+                : Math.max(activeIndex - 1, 0)
+
+        setActiveIndex(nextIndex)
+
+        const nextFont = fonts[nextIndex]
+        setFontId(nextFont.id as FontId)
+
+        fontRefs.current[nextIndex]?.focus()
+        fontRefs.current[nextIndex]?.scrollIntoView({
+            block: 'nearest',
+        })
+    }
 
     return (
         <Sheet>
@@ -28,16 +55,23 @@ export function FontSheet() {
                     <SheetTitle>Font</SheetTitle>
                     <SheetDescription>Choose a font for the app</SheetDescription>
                 </SheetHeader>
-                <div className="flex flex-col gap-2">
-                    {fonts.map((font) => {
-                        const isActive = font.id === active.id
+                <div className="flex flex-col gap-2" onKeyDown={handleKeyDown}>
+                    {fonts.map((font, index) => {
+                        const isActive = index === activeIndex
                         return (
                             <button
                                 key={font.id}
+                                ref={(el) => {
+                                    fontRefs.current[index] = el
+                                }}
+                                tabIndex={isActive ? 0 : -1}
                                 type="button"
-                                onClick={() => setFontId(font.id as FontId)}
+                                onClick={() => {
+                                    setActiveIndex(index)
+                                    setFontId(font.id as FontId)
+                                }}
                                 className={cn(
-                                    'flex items-center justify-between rounded-xl p-4 text-left transition-colors',
+                                    'flex items-center justify-between rounded-xl p-4 text-left transition-colors focus:outline-none',
                                     isActive
                                         ? 'ring-2 ring-(--accent-color)'
                                         : 'ring-1 ring-border hover:bg-muted/50',

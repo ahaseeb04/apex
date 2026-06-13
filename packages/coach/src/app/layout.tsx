@@ -4,7 +4,6 @@ import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/sonner'
-import { FontProvider } from '@/hooks/use-font'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -43,10 +42,8 @@ export default function RootLayout({
             )}
         >
             <body className="min-h-full flex flex-col">
-                <FontProvider>
-                    <Providers>{children}</Providers>
-                    <Toaster />
-                </FontProvider>
+                <Providers>{children}</Providers>
+                <Toaster />
             </body>
         </html>
     )
