@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react'
 import Link from 'next/link'
+import { SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -146,12 +147,13 @@ export default function Home() {
                 <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
                     {activeTab === 'users' ? (
                         <>
-                            <div className="mb-4">
+                            <div className="relative mb-4">
+                                <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search users..."
-                                    className="h-10 bg-transparent"
+                                    className="h-10 bg-transparent pl-9"
                                 />
                             </div>
 

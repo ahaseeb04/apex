@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
-import { UploadIcon, XIcon, FileVideoIcon, VideoIcon } from 'lucide-react'
+import { SearchIcon, UploadIcon, XIcon, FileVideoIcon, VideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     AlertDialog,
@@ -129,13 +129,16 @@ export function VideoUploadForm() {
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="exercise_name">Exercise</Label>
-                        <ExerciseNameInput
-                            value={exerciseName}
-                            onChange={setExerciseName}
-                            suggestions={exerciseNames}
-                            placeholder="Search exercise..."
-                            className="h-10 w-full rounded-md border border-input bg-background px-3 text-base shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
-                        />
+                        <div className="relative">
+                            <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <ExerciseNameInput
+                                value={exerciseName}
+                                onChange={setExerciseName}
+                                suggestions={exerciseNames}
+                                placeholder="Search exercise..."
+                                className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -315,7 +318,7 @@ export function VideoUploadForm() {
                                                     </HoverCardTrigger>
                                                     <HoverCardContent
                                                         side="top"
-                                                        className="w-96 p-2"
+                                                        className="w-96 overflow-hidden p-0"
                                                     >
                                                         <img
                                                             src={video.thumbnailUrl}
