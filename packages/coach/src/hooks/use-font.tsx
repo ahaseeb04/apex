@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontId = 'system' | 'inter' | 'google-sans' | 'times-new-roman'
+export type FontId = 'system' | 'inter' | 'google-sans' | 'proxima-nova' | 'avenir'
 
 interface Font {
     id: FontId
@@ -17,22 +17,20 @@ export const fonts: Font[] = [
     { id: 'system', name: 'System', variable: SYSTEM_FONT_STACK },
     { id: 'inter', name: 'Inter', variable: '--font-sans' },
     { id: 'google-sans', name: 'Google Sans', variable: '--font-google-sans' },
-    { id: 'times-new-roman', name: 'Times New Roman', variable: "'Times New Roman', Times, serif" },
+    { id: 'proxima-nova', name: 'Proxima Nova', variable: "'Proxima Nova', sans-serif" },
+    { id: 'avenir', name: 'Avenir', variable: 'Avenir, system-ui, sans-serif' },
 ]
 
 const STORAGE_KEY = 'coach-font'
 
 function getStoredFontId(): FontId | null {
     if (typeof window === 'undefined') return null
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'system' || stored === 'inter' || stored === 'google-sans' || stored === 'times-new-roman') return stored
-    return null
+
+    return localStorage.getItem(STORAGE_KEY) as FontId
 }
 
 function applyFont(font: Font) {
-    const value = font.variable.startsWith('--')
-        ? `var(${font.variable})`
-        : font.variable
+    const value = font.variable.startsWith('--') ? `var(${font.variable})` : font.variable
     document.documentElement.style.setProperty('--font-family', value)
 }
 
@@ -48,7 +46,7 @@ export function FontProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const stored = getStoredFontId()
-        const initial = stored ? fonts.find((f) => f.id === stored) ?? fonts[0] : fonts[0]
+        const initial = stored ? (fonts.find((f) => f.id === stored) ?? fonts[0]) : fonts[0]
         applyFont(initial)
         queueMicrotask(() => setFont(initial))
     }, [])
@@ -63,11 +61,7 @@ export function FontProvider({ children }: { children: ReactNode }) {
         setFont(next)
     }
 
-    return (
-        <FontContext.Provider value={{ font, setFontId }}>
-            {children}
-        </FontContext.Provider>
-    )
+    return <FontContext.Provider value={{ font, setFontId }}>{children}</FontContext.Provider>
 }
 
 export function useFont() {

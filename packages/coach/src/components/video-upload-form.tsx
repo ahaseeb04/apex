@@ -127,7 +127,7 @@ export function VideoUploadForm() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
-                        <Label htmlFor="exercise_name">Exercise Name</Label>
+                        <Label htmlFor="exercise_name">Exercise</Label>
                         <ExerciseNameInput
                             value={exerciseName}
                             onChange={setExerciseName}
@@ -359,22 +359,38 @@ export function VideoUploadForm() {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                                                            <AlertDialogTitle>
+                                                                Delete Video
+                                                            </AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Are you sure you want to delete the &quot;{video.exerciseName}&quot; video? This action cannot be undone.
+                                                                Are you sure you want to delete the
+                                                                &quot;{video.exerciseName}&quot;
+                                                                video? This action cannot be undone.
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogCancel>
+                                                                Cancel
+                                                            </AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 variant="destructive"
                                                                 onClick={async () => {
                                                                     try {
                                                                         await deleteVideo(video.id)
-                                                                        setVideos((prev) => prev.filter((v) => v.id !== video.id))
-                                                                        toast.success('Video deleted')
+                                                                        setVideos((prev) =>
+                                                                            prev.filter(
+                                                                                (v) =>
+                                                                                    v.id !==
+                                                                                    video.id,
+                                                                            ),
+                                                                        )
+                                                                        toast.success(
+                                                                            'Video deleted',
+                                                                        )
                                                                     } catch {
-                                                                        toast.error('Failed to delete video')
+                                                                        toast.error(
+                                                                            'Failed to delete video',
+                                                                        )
                                                                     }
                                                                 }}
                                                             >
