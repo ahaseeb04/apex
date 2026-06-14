@@ -1052,14 +1052,14 @@ function SortableExerciseRow({
             <td className="p-0">
                 <button
                     type="button"
-                    className="flex size-8 items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-muted"
+                    className="flex size-8 items-center justify-center cursor-grab active:cursor-grabbing rounded"
                     {...attributes}
                     {...listeners}
                 >
                     <GripVertical className="size-3.5 text-muted-foreground" />
                 </button>
             </td>
-            <td className="p-2 pl-0">
+            <td className="p-2">
                 <ExerciseNameInput
                     value={ex.name}
                     onChange={(v) => updateExercise(index, 'name', v)}
