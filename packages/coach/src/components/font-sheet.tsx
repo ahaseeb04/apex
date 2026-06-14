@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type ComponentProps } from 'react'
 import { Check, TypeIcon } from 'lucide-react'
 import { useFont, fonts, type FontId } from '@/hooks/use-font'
+import { useTheme } from '@/hooks/use-theme'
 import {
     Sheet,
     SheetContent,
@@ -16,11 +17,14 @@ import { cn } from '@/lib/utils'
 
 export function FontSheet() {
     const { font: active, setFontId } = useFont()
+    const { theme } = useTheme()
     const fontRefs = useRef<(HTMLButtonElement | null)[]>([])
 
-    const [activeIndex, setActiveIndex] = useState(
-        fonts.findIndex((f) => f.id === active.id),
-    )
+    const [activeIndex, setActiveIndex] = useState(fonts.findIndex((f) => f.id === active.id))
+
+    function getFontFamily(font: (typeof fonts)[number]) {
+        return font.variable.startsWith('--') ? `var(${font.variable})` : font.variable
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
@@ -76,22 +80,29 @@ export function FontSheet() {
                                         ? 'ring-2 ring-(--accent-color)'
                                         : 'ring-1 ring-border hover:bg-muted/50',
                                 )}
+                                style={
+                                    isActive
+                                        ? ({
+                                              '--accent-color': theme.colors.accent,
+                                          } as ComponentProps<'button'>['style'])
+                                        : undefined
+                                }
                             >
                                 <div className="flex items-center gap-3">
                                     <div
                                         className="flex size-10 items-center justify-center rounded-lg bg-muted"
-                                        style={{ fontFamily: `var(${font.variable})` }}
+                                        style={{ fontFamily: getFontFamily(font) }}
                                     >
                                         <span className="text-lg font-semibold">Aa</span>
                                     </div>
                                     <div>
                                         <p
                                             className="text-sm font-medium"
-                                            style={{ fontFamily: `var(${font.variable})` }}
+                                            style={{ fontFamily: getFontFamily(font) }}
                                         >
                                             {font.name}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-sm text-muted-foreground" style={{ fontFamily: getFontFamily(font) }}>
                                             The quick brown fox jumps over the lazy dog
                                         </p>
                                     </div>

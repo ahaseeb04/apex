@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontId = 'inter' | 'google-sans'
+export type FontId = 'system' | 'inter' | 'google-sans' | 'times-new-roman'
 
 interface Font {
     id: FontId
@@ -10,9 +10,14 @@ interface Font {
     variable: string
 }
 
+const SYSTEM_FONT_STACK =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif"
+
 export const fonts: Font[] = [
+    { id: 'system', name: 'System', variable: SYSTEM_FONT_STACK },
     { id: 'inter', name: 'Inter', variable: '--font-sans' },
     { id: 'google-sans', name: 'Google Sans', variable: '--font-google-sans' },
+    { id: 'times-new-roman', name: 'Times New Roman', variable: "'Times New Roman', Times, serif" },
 ]
 
 const STORAGE_KEY = 'coach-font'
@@ -20,15 +25,15 @@ const STORAGE_KEY = 'coach-font'
 function getStoredFontId(): FontId | null {
     if (typeof window === 'undefined') return null
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'inter' || stored === 'google-sans') return stored
+    if (stored === 'system' || stored === 'inter' || stored === 'google-sans' || stored === 'times-new-roman') return stored
     return null
 }
 
 function applyFont(font: Font) {
-    document.documentElement.style.setProperty(
-        '--font-family',
-        `var(${font.variable})`,
-    )
+    const value = font.variable.startsWith('--')
+        ? `var(${font.variable})`
+        : font.variable
+    document.documentElement.style.setProperty('--font-family', value)
 }
 
 interface FontContextValue {
