@@ -4,6 +4,17 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { UploadIcon, XIcon, FileVideoIcon, VideoIcon, PlayIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -32,7 +43,6 @@ export function VideoUploadForm() {
     const [videos, setVideos] = useState<ExerciseVideo[]>([])
     const [loadingVideos, setLoadingVideos] = useState(true)
     const [dragOver, setDragOver] = useState(false)
-    const [deletingId, setDeletingId] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const loadVideos = useCallback(async () => {
@@ -95,19 +105,6 @@ export function VideoUploadForm() {
             toast.error(e instanceof Error ? e.message : 'Failed to upload video')
         } finally {
             setUploading(false)
-        }
-    }
-
-    async function handleDelete(videoId: string) {
-        setDeletingId(videoId)
-        try {
-            await deleteVideo(videoId)
-            setVideos((prev) => prev.filter((v) => v.id !== videoId))
-            toast.success('Video deleted')
-        } catch {
-            toast.error('Failed to delete video')
-        } finally {
-            setDeletingId(null)
         }
     }
 
@@ -356,15 +353,36 @@ export function VideoUploadForm() {
                                                     video={video}
                                                     onUpdated={handleUpdated}
                                                 />
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-xs"
-                                                    disabled={deletingId === video.id}
-                                                    className="text-muted-foreground/40 hover:text-destructive"
-                                                    onClick={() => handleDelete(video.id)}
-                                                >
-                                                    <XIcon className="size-3" />
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger className="relative z-10 cursor-pointer text-muted-foreground/40 hover:text-destructive">
+                                                        <XIcon className="size-3" />
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete the &quot;{video.exerciseName}&quot; video? This action cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                variant="destructive"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await deleteVideo(video.id)
+                                                                        setVideos((prev) => prev.filter((v) => v.id !== video.id))
+                                                                        toast.success('Video deleted')
+                                                                    } catch {
+                                                                        toast.error('Failed to delete video')
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </TableCell>
                                     </TableRow>
