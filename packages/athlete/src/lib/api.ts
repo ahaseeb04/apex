@@ -1,5 +1,9 @@
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000'
 
+export function isEmailVerificationEnabled() {
+    return process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_ENABLED !== 'false'
+}
+
 export interface ExerciseData {
     id: string
     name: string

@@ -17,6 +17,10 @@ function generateToken(userId: string): string {
     return jwt.sign({ sub: userId }, process.env.JWT_SECRET!)
 }
 
+function isEmailVerificationEnabled(): boolean {
+    return process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_ENABLED !== 'false'
+}
+
 const signinSchema = z.object({
     email: z.string().email(),
     password: z.string(),
@@ -38,7 +42,7 @@ authRouter.post('/signin', async (req, res) => {
         return
     }
 
-    if (!user.emailVerified) {
+    if (isEmailVerificationEnabled() && !user.emailVerified) {
         res.status(403).json({ error: 'email not verified', userId: user.id, email: user.email })
         return
     }
@@ -81,8 +85,31 @@ authRouter.post('/signup', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10)
-    const code = generateCode()
-    const codeExpiry = new Date(Date.now() + 10 * 60 * 1000)
+
+    if (isEmailVerificationEnabled()) {
+        const code = generateCode()
+        const codeExpiry = new Date(Date.now() + 10 * 60 * 1000)
+
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashed,
+                username,
+                role,
+                emailVerificationCode: code,
+                emailVerificationCodeExpiry: codeExpiry,
+            },
+        })
+
+        await sendVerificationEmail(user.email, code)
+
+        res.status(201).json({
+            userId: user.id,
+            email: user.email,
+            message: 'Verification code sent to your email',
+        })
+        return
+    }
 
     const user = await prisma.user.create({
         data: {
@@ -90,17 +117,14 @@ authRouter.post('/signup', async (req, res) => {
             password: hashed,
             username,
             role,
-            emailVerificationCode: code,
-            emailVerificationCodeExpiry: codeExpiry,
+            emailVerified: true,
         },
     })
-
-    await sendVerificationEmail(user.email, code)
 
     res.status(201).json({
         userId: user.id,
         email: user.email,
-        message: 'Verification code sent to your email',
+        message: 'Account created',
     })
 })
 
