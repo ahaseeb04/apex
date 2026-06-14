@@ -42,6 +42,14 @@ export interface ProgramData {
     blocks: BlockData[]
 }
 
+export interface ExerciseVideo {
+    id: string
+    exerciseName: string
+    videoUrl: string
+    thumbnailUrl: string | null
+    createdAt: string
+}
+
 export class ApiError extends Error {
     status: number
     body: unknown
@@ -102,6 +110,10 @@ export async function apiGet(path: string, token: string) {
     }
 
     return data
+}
+
+export async function getVideos(token: string) {
+    return (await apiGet('/api/videos', token)) as ExerciseVideo[]
 }
 
 export async function apiPost(path: string, body: Record<string, unknown>, token?: string) {
