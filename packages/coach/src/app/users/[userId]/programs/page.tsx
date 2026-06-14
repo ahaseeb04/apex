@@ -10,9 +10,10 @@ import { Spinner } from '@/components/ui/spinner'
 import { AppHeader } from '@/components/app-header'
 import { getStoredAuth, signOut } from '@/lib/auth'
 import { getPrograms, deleteProgram } from '@/lib/api'
+import { exportProgramToXlsx } from '@/lib/export-xlsx'
 import type { AuthUser } from '@/lib/auth'
 import type { Program } from '@/lib/api'
-import { PlusIcon, LayersIcon, Trash2Icon } from 'lucide-react'
+import { PlusIcon, LayersIcon, Trash2Icon, DownloadIcon } from 'lucide-react'
 import { pluralize } from '@/lib/utils'
 import { toast } from 'sonner'
 import {
@@ -175,6 +176,22 @@ export default function UserProgramsPage() {
                                                     },
                                                 )}
                                             </span>
+                                            <button
+                                                type="button"
+                                                className="relative z-10 cursor-pointer text-muted-foreground/50 hover:text-foreground"
+                                                onClick={async (e) => {
+                                                    e.preventDefault()
+                                                    try {
+                                                        await exportProgramToXlsx(program)
+                                                        toast.success('Program exported')
+                                                    } catch {
+                                                        toast.error('Failed to export program')
+                                                    }
+                                                }}
+                                                title="Export program"
+                                            >
+                                                <DownloadIcon className="size-3.5" />
+                                            </button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger className="relative z-10 cursor-pointer text-muted-foreground/50 hover:text-destructive">
                                                     <Trash2Icon className="size-3.5" />
