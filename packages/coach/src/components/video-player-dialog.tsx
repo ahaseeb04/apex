@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { PlayIcon } from 'lucide-react'
+import { VisuallyHidden as VisuallyHiddenPrimitive } from 'radix-ui'
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
@@ -26,19 +26,17 @@ export function VideoPlayerDialog({ video }: VideoPlayerDialogProps) {
                     <PlayIcon className="size-3 text-muted-foreground" />
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-3xl" showCloseButton>
-                <DialogHeader>
+            <DialogContent className="sm:max-w-3xl p-0 overflow-hidden" showCloseButton>
+                <VisuallyHiddenPrimitive.Root>
                     <DialogTitle>{video.exerciseName}</DialogTitle>
-                </DialogHeader>
-                <div className="overflow-hidden rounded-lg bg-muted">
-                    <video
-                        src={video.videoUrl}
-                        controls
-                        className="aspect-video w-full"
-                        preload="metadata"
-                        autoPlay
-                    />
-                </div>
+                </VisuallyHiddenPrimitive.Root>
+                <video
+                    src={video.videoUrl}
+                    controls
+                    className="aspect-video w-full"
+                    preload="metadata"
+                    autoPlay
+                />
             </DialogContent>
         </Dialog>
     )
