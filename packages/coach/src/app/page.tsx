@@ -124,16 +124,10 @@ export default function Home() {
                     <div className="mx-auto flex h-16 max-w-2xl items-center gap-4 px-6">
                         <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
                             <TabsList variant="line">
-                                <TabsTrigger
-                                    value="users"
-                                    className="text-base font-semibold tracking-tight"
-                                >
+                                <TabsTrigger value="users" className="text-base font-semibold">
                                     Users
                                 </TabsTrigger>
-                                <TabsTrigger
-                                    value="videos"
-                                    className="text-base font-semibold tracking-tight"
-                                >
+                                <TabsTrigger value="videos" className="text-base font-semibold">
                                     Videos
                                 </TabsTrigger>
                             </TabsList>

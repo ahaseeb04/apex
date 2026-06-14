@@ -250,7 +250,7 @@ function VideoPlayerModal({
             })
         } else {
             player.pause()
-            player.replace(null)
+            player.replaceAsync(null)
         }
     }, [video, player])
 
@@ -264,7 +264,7 @@ function VideoPlayerModal({
 
     function handleClose() {
         player.pause()
-        player.replace(null)
+        player.replaceAsync(null)
         onClose()
     }
 
