@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
-import { UploadIcon, XIcon, FileVideoIcon, VideoIcon, PlayIcon } from 'lucide-react'
+import { UploadIcon, XIcon, FileVideoIcon, VideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     AlertDialog,
@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils'
 import { ExerciseNameInput, useExerciseNames } from '@/components/exercise-name-input'
 import { uploadVideo, getVideos, deleteVideo, type ExerciseVideo } from '@/lib/api'
 import { EditVideoDialog } from '@/components/edit-video-dialog'
+import { VideoPlayerDialog } from '@/components/video-player-dialog'
 
 export function VideoUploadForm() {
     const exerciseNames = useExerciseNames()
@@ -330,15 +331,7 @@ export function VideoUploadForm() {
                                             )}
                                         </TableCell>
                                         <TableCell className="font-medium">
-                                            <a
-                                                href={video.videoUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 hover:underline"
-                                            >
-                                                {video.exerciseName}
-                                                <PlayIcon className="size-3 text-muted-foreground" />
-                                            </a>
+                                            <VideoPlayerDialog video={video} />
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">
                                             {new Date(video.createdAt).toLocaleDateString('en-US', {

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { toast } from 'sonner'
-import { PencilIcon, UploadIcon, XIcon, LinkIcon, FileVideoIcon, ImageIcon } from 'lucide-react'
+import { PencilIcon, UploadIcon, XIcon, LinkIcon, FileVideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -31,7 +31,7 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
     const [thumbnailUrl, setThumbnailUrl] = useState('')
     const [saving, setSaving] = useState(false)
-    const [thumbnailMode, setThumbnailMode] = useState<'current' | 'upload' | 'url'>('current')
+    const [thumbnailMode, setThumbnailMode] = useState<'upload' | 'url'>('upload')
     const [dragOver, setDragOver] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -117,31 +117,10 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                             className="h-10 w-full rounded-md border border-input bg-background px-3 text-base shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
                         />
                     </div>
-                    <div className="overflow-hidden rounded-lg bg-muted">
-                        <video
-                            src={video.videoUrl}
-                            controls
-                            className="aspect-video w-full"
-                            preload="metadata"
-                        />
-                    </div>
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <Label>Thumbnail</Label>
                             <div className="inline-flex rounded-md border border-border bg-muted p-0.5">
-                                <button
-                                    type="button"
-                                    onClick={() => setThumbnailMode('current')}
-                                    className={cn(
-                                        'inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors',
-                                        thumbnailMode === 'current'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground hover:text-foreground',
-                                    )}
-                                >
-                                    <ImageIcon className="size-3" />
-                                    Current
-                                </button>
                                 <button
                                     type="button"
                                     onClick={() => setThumbnailMode('upload')}
@@ -170,22 +149,7 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                                 </button>
                             </div>
                         </div>
-                        {thumbnailMode === 'current' ? (
-                            video.thumbnailUrl ? (
-                                <img
-                                    src={video.thumbnailUrl}
-                                    alt={video.exerciseName}
-                                    className="aspect-video w-full rounded-lg border object-cover"
-                                />
-                            ) : (
-                                <div className="flex aspect-video w-full items-center justify-center rounded-lg border border-dashed bg-muted">
-                                    <div className="text-center">
-                                        <FileVideoIcon className="mx-auto size-8 text-muted-foreground/30" />
-                                        <p className="mt-1 text-xs text-muted-foreground">No thumbnail set</p>
-                                    </div>
-                                </div>
-                            )
-                        ) : thumbnailMode === 'upload' ? (
+                        {thumbnailMode === 'upload' ? (
                             thumbnailFile ? (
                                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3.5">
                                     <div className="min-w-0 flex-1">
@@ -267,11 +231,9 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                         disabled={
                             saving ||
                             (exerciseName.trim() === video.exerciseName &&
-                                (thumbnailMode === 'current'
-                                    ? true
-                                    : thumbnailMode === 'upload'
-                                      ? !thumbnailFile
-                                      : !thumbnailUrl.trim()))
+                                (thumbnailMode === 'upload'
+                                    ? !thumbnailFile
+                                    : !thumbnailUrl.trim()))
                         }
                     >
                         {saving ? (
