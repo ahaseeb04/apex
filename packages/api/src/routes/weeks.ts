@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { z } from 'zod'
 
-import { requireAuth } from '../middleware/auth.js'
-import type { AuthenticatedRequest } from '../middleware/auth.js'
-import { prisma } from '../lib/prisma.js'
+import { requireAuth } from '../middleware/auth'
+import type { AuthenticatedRequest } from '../middleware/auth'
+import { prisma } from '../lib/prisma'
 
 export const weekRouter = Router()
 

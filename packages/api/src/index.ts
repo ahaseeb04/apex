@@ -3,7 +3,7 @@ import { resolve } from 'path'
 
 config({ path: resolve(import.meta.dirname, '../../../.env') })
 
-import { createApp } from './app.js'
+import { createApp } from './app'
 
 const app = createApp()
 

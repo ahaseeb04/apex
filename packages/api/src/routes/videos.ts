@@ -8,9 +8,9 @@ import { unlink, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { requireAuth } from '../middleware/auth.js'
-import { prisma } from '../lib/prisma.js'
-import { uploadToR2, deleteFromR2 } from '../lib/r2.js'
+import { requireAuth } from '../middleware/auth'
+import { prisma } from '../lib/prisma'
+import { uploadToR2, deleteFromR2 } from '../lib/r2'
 
 const execFileAsync = promisify(execFile)
 

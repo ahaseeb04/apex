@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
-import { prisma } from '../lib/prisma.js'
-import { sendVerificationEmail } from '../lib/email.js'
-import { type AuthenticatedRequest, requireAuth } from '../middleware/auth.js'
+import { prisma } from '../lib/prisma'
+import { sendVerificationEmail } from '../lib/email'
+import { type AuthenticatedRequest, requireAuth } from '../middleware/auth'
 
 export const authRouter = Router()
 
