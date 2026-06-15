@@ -2,14 +2,17 @@
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react'
 import Link from 'next/link'
+import { SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { AppHeader } from '@/components/app-header'
+import { ThemeSheet } from '@/components/theme-sheet'
+import { FontSheet } from '@/components/font-sheet'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { VideoUploadForm } from '@/components/video-upload-form'
 import { signIn, ApiError, getStoredAuth, signOut } from '@/lib/auth'
 import { getUsers } from '@/lib/api'
 import type { AuthUser } from '@/lib/auth'
@@ -27,6 +30,17 @@ export default function Home() {
     const [users, setUsers] = useState<User[]>([])
     const [usersLoading, setUsersLoading] = useState(false)
     const [search, setSearch] = useState('')
+    const [activeTab, setActiveTab] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('tab') || 'users'
+        }
+        return 'users'
+    })
+
+    function handleTabChange(tab: string) {
+        setActiveTab(tab)
+        localStorage.setItem('tab', tab)
+    }
 
     useEffect(() => {
         startTransition(() => {
@@ -107,50 +121,81 @@ export default function Home() {
     if (user) {
         return (
             <div className="flex min-h-screen flex-col bg-background">
-                <AppHeader title="Users" onSignOut={handleSignOut} />
+                <header className="sticky top-0 z-10 border-b border-border bg-background">
+                    <div className="mx-auto flex h-16 max-w-2xl items-center gap-4 px-6">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
+                            <TabsList variant="line">
+                                <TabsTrigger value="users" className="text-base font-semibold">
+                                    Users
+                                </TabsTrigger>
+                                <TabsTrigger value="videos" className="text-base font-semibold">
+                                    Videos
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <div className="flex items-center justify-end gap-x-2">
+                            <span className="text-sm text-muted-foreground">{user.email}</span>
+                            <FontSheet />
+                            <ThemeSheet />
+                            <Button variant="outline" onClick={handleSignOut}>
+                                Sign Out
+                            </Button>
+                        </div>
+                    </div>
+                </header>
 
                 <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-6">
-                    <div className="mb-4">
-                        <Input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search users..."
-                            className="h-10 bg-transparent"
-                        />
-                    </div>
+                    {activeTab === 'users' ? (
+                        <>
+                            <div className="relative mb-4">
+                                <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Search users..."
+                                    className="h-10 bg-transparent pl-9"
+                                />
+                            </div>
 
-                    {usersLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Spinner className="size-5 text-muted-foreground" />
-                        </div>
-                    ) : filteredUsers.length === 0 ? (
-                        <p className="py-12 text-center text-base text-muted-foreground">
-                            {search ? 'No users match your search' : 'No users found'}
-                        </p>
+                            {usersLoading ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Spinner className="size-5 text-muted-foreground" />
+                                </div>
+                            ) : filteredUsers.length === 0 ? (
+                                <p className="py-12 text-center text-base text-muted-foreground">
+                                    {search ? 'No users match your search' : 'No users found'}
+                                </p>
+                            ) : (
+                                <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
+                                    {filteredUsers.map((u) => (
+                                        <Link
+                                            key={u.id}
+                                            href={`/users/${u.id}/programs?name=${encodeURIComponent(u.username)}`}
+                                            className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50"
+                                            onClick={() =>
+                                                sessionStorage.setItem('name', u.username)
+                                            }
+                                        >
+                                            <Avatar>
+                                                <AvatarFallback>
+                                                    {u.username.charAt(0).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-base font-medium">
+                                                    {u.username}
+                                                </p>
+                                                <p className="truncate text-sm text-muted-foreground">
+                                                    {u.email}
+                                                </p>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
-                            {filteredUsers.map((u) => (
-                                <Link
-                                    key={u.id}
-                                    href={`/users/${u.id}/programs?name=${encodeURIComponent(u.username)}`}
-                                    className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50"
-                                >
-                                    <Avatar>
-                                        <AvatarFallback>
-                                            {u.username.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-base font-medium">
-                                            {u.username}
-                                        </p>
-                                        <p className="truncate text-sm text-muted-foreground">
-                                            {u.email}
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                        <VideoUploadForm />
                     )}
                 </main>
             </div>

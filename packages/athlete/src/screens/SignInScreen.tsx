@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 
 import InputField from '../components/InputField'
 import { ApiError, useAuthStore } from '../stores/authStore'
+import { isEmailVerificationEnabled } from '../lib/api'
 import { useActiveTheme } from '../stores/themeStore'
 import type { RootStackParamList } from './types'
 
@@ -42,11 +43,24 @@ export default function SignInScreen({ navigation }: Props) {
             await signIn(email.trim(), password)
         } catch (e) {
             if (e instanceof ApiError) {
-                if (e.status === 403 && typeof e.body === 'object' && e.body !== null) {
+                if (
+                    e.status === 403 &&
+                    typeof e.body === 'object' &&
+                    e.body !== null
+                ) {
                     const body = e.body as Record<string, unknown>
-                    if (body.error === 'email not verified' && typeof body.userId === 'string' && typeof body.email === 'string') {
-                        navigation.navigate('VerifyEmail', { userId: body.userId, email: body.email })
-                        return
+                    if (
+                        body.error === 'email not verified' &&
+                        typeof body.userId === 'string' &&
+                        typeof body.email === 'string'
+                    ) {
+                        if (isEmailVerificationEnabled()) {
+                            navigation.navigate('VerifyEmail', {
+                                userId: body.userId,
+                                email: body.email,
+                            })
+                            return
+                        }
                     }
                 }
                 setError(e.getErrorMessage())

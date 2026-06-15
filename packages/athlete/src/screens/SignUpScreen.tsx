@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 
 import InputField from '../components/InputField'
 import { ApiError, useAuthStore } from '../stores/authStore'
+import { isEmailVerificationEnabled } from '../lib/api'
 import { useActiveTheme } from '../stores/themeStore'
 import type { RootStackParamList } from './types'
 
@@ -21,6 +22,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>
 
 export default function SignUpScreen({ navigation }: Props) {
     const signUp = useAuthStore((s) => s.signUp)
+    const signIn = useAuthStore((s) => s.signIn)
     const theme = useActiveTheme()
     const c = theme.colors
     const [username, setUsername] = useState('')
@@ -46,7 +48,11 @@ export default function SignUpScreen({ navigation }: Props) {
         setLoading(true)
         try {
             const result = await signUp(email.trim(), password, username.trim())
-            navigation.navigate('VerifyEmail', { userId: result.userId, email: result.email })
+            if (isEmailVerificationEnabled()) {
+                navigation.navigate('VerifyEmail', { userId: result.userId, email: result.email })
+            } else {
+                await signIn(email.trim(), password)
+            }
         } catch (e) {
             if (e instanceof ApiError) {
                 setError(e.getErrorMessage())
