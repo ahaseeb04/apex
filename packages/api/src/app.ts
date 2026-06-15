@@ -1,12 +1,12 @@
 import cors from 'cors'
 import express from 'express'
 
-import { authRouter } from './routes/auth'
-import { exerciseRouter } from './routes/exercises'
-import { programRouter } from './routes/programs'
-import { userRouter } from './routes/users'
-import { videoRouter } from './routes/videos'
-import { weekRouter } from './routes/weeks'
+import { authRouter } from './routes/auth.js'
+import { exerciseRouter } from './routes/exercises.js'
+import { programRouter } from './routes/programs.js'
+import { userRouter } from './routes/users.js'
+import { videoRouter } from './routes/videos.js'
+import { weekRouter } from './routes/weeks.js'
 
 export function createApp() {
     const app = express()
