@@ -1,14 +1,27 @@
-app = "conspiracy-barbell-api"
-primary_region = "lax"
+# fly.toml app configuration file generated for conspiracy-barbell on 2026-06-15T00:58:56Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'conspiracy-barbell'
+primary_region = 'ams'
 
 [build]
-  dockerfile = "packages/api/Dockerfile"
+  dockerfile = 'packages/api/Dockerfile'
 
 [env]
-  PORT = "4000"
-
-[[services]]
-  internal_port = 4000
+  PORT = '4000'
 
 [http_service]
+  internal_port = 8080
+
+[[services]]
+  protocol = ''
   internal_port = 4000
+  ports = []
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
