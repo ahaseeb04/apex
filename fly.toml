@@ -1,0 +1,14 @@
+app = "conspiracy-barbell-api"
+primary_region = "lax"
+
+[build]
+  dockerfile = "packages/api/Dockerfile"
+
+[env]
+  PORT = "4000"
+
+[[services]]
+  internal_port = 4000
+
+[http_service]
+  internal_port = 4000

@@ -7,6 +7,7 @@ import { createApp } from './app'
 
 const app = createApp()
 
-app.listen(4000, () => {
-    console.log('API server running on http://localhost:4000')
+const port = process.env.PORT || 4000
+app.listen(port, () => {
+    console.log(`API server running on port ${port}`)
 })
