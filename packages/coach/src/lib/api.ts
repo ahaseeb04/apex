@@ -56,6 +56,14 @@ export interface Program {
     blocks: BlockData[]
 }
 
+export interface ExerciseVideo {
+    id: string
+    exerciseName: string
+    videoUrl: string
+    thumbnailUrl: string | null
+    createdAt: string
+}
+
 function getToken(): string | null {
     if (typeof window === 'undefined') return null
     return localStorage.getItem('auth_token')
@@ -219,4 +227,61 @@ export async function getExerciseNames() {
 
 export async function deleteProgram(programId: string) {
     return (await apiDelete(`/api/programs/${programId}`)) as { message: string }
+}
+
+export async function uploadVideo(exerciseName: string, file: File) {
+    const token = getToken()
+    const formData = new FormData()
+    formData.append('exercise_name', exerciseName)
+    formData.append('video', file)
+
+    const res = await fetch(`${API_URL}/api/videos`, {
+        method: 'POST',
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data as ExerciseVideo
+}
+
+export async function getVideos(exerciseName?: string) {
+    const path = exerciseName
+        ? `/api/videos?exerciseName=${encodeURIComponent(exerciseName)}`
+        : '/api/videos'
+    return (await apiGet(path)) as ExerciseVideo[]
+}
+
+export async function deleteVideo(videoId: string) {
+    return (await apiDelete(`/api/videos/${videoId}`)) as { message: string }
+}
+
+export async function updateVideo(
+    videoId: string,
+    { exerciseName, thumbnail, thumbnailUrl }: { exerciseName?: string; thumbnail?: File; thumbnailUrl?: string },
+) {
+    const token = getToken()
+    const formData = new FormData()
+    if (exerciseName) formData.append('exerciseName', exerciseName)
+    if (thumbnail) formData.append('thumbnail', thumbnail)
+    if (thumbnailUrl) formData.append('thumbnailUrl', thumbnailUrl)
+
+    const res = await fetch(`${API_URL}/api/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new ApiError(res.status, data)
+
+    return data as ExerciseVideo
 }

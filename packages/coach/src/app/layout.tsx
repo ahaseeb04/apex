@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Inter } from 'next/font/google'
+import { Inter, Google_Sans, DM_Sans } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
@@ -7,14 +7,17 @@ import { Toaster } from '@/components/ui/sonner'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
-const geistSans = Geist({
-    variable: '--font-geist-sans',
+const googleSans = Google_Sans({
     subsets: ['latin'],
+    variable: '--font-google-sans',
+    weight: ['400', '500', '600', '700'],
+    adjustFontFallback: false,
 })
 
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
+const dmSans = DM_Sans({
     subsets: ['latin'],
+    variable: '--font-dm-sans',
+    weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -34,12 +37,18 @@ export default function RootLayout({
                 'dark',
                 'h-full',
                 'antialiased',
-                geistSans.variable,
-                geistMono.variable,
                 'font-sans',
                 inter.variable,
+                googleSans.variable,
+                dmSans.variable,
             )}
         >
+            <head>
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;600;700&display=swap"
+                />
+            </head>
             <body className="min-h-full flex flex-col">
                 <Providers>{children}</Providers>
                 <Toaster />

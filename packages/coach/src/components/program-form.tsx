@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
-import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
-import { PlusIcon, Trash2Icon } from 'lucide-react'
+import { GripVertical, PlusIcon, Trash2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,14 +23,28 @@ import { cn } from '@/lib/utils'
 import {
     createProgram,
     updateProgram,
-    getExerciseNames,
     type DayData,
     type ExerciseData,
     type Program,
 } from '@/lib/api'
-
-const EXERCISE_NAMES_CACHE_KEY = 'exerciseNames'
-const CACHE_TTL = 3 * 60 * 60 * 1000
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { ExerciseNameInput, useExerciseNames } from '@/components/exercise-name-input'
 
 const FATIGUE_METRICS = [
     { key: 'sleep_quality', label: 'Sleep Quality' },
@@ -51,57 +63,6 @@ const WEEKLY_CHECK_IN_METRICS = [
     { key: 'calories', label: 'Calories', unit: 'kcal' },
     { key: 'sleep_hours', label: 'Sleep', unit: 'hrs' },
 ]
-
-interface ExerciseNamesCache {
-    names: string[]
-    lastFetched: number
-}
-
-function loadCachedExerciseNames(): string[] | null {
-    try {
-        const raw = localStorage.getItem(EXERCISE_NAMES_CACHE_KEY)
-        if (!raw) return null
-        const cached: ExerciseNamesCache = JSON.parse(raw)
-        if (Date.now() - cached.lastFetched < CACHE_TTL) {
-            return cached.names
-        }
-    } catch {
-        // invalid cache
-    }
-    return null
-}
-
-function saveExerciseNamesToCache(names: string[]) {
-    try {
-        const data: ExerciseNamesCache = { names, lastFetched: Date.now() }
-        localStorage.setItem(EXERCISE_NAMES_CACHE_KEY, JSON.stringify(data))
-    } catch {
-        // storage unavailable
-    }
-}
-
-function useExerciseNames() {
-    const [names, setNames] = useState<string[]>(() => loadCachedExerciseNames() ?? [])
-
-    useEffect(() => {
-        const cached = loadCachedExerciseNames()
-        if (cached) {
-            setNames(cached)
-            return
-        }
-
-        getExerciseNames()
-            .then((fetched) => {
-                setNames(fetched)
-                saveExerciseNamesToCache(fetched)
-            })
-            .catch(() => {
-                if (!cached) setNames([])
-            })
-    }, [])
-
-    return names
-}
 
 let keyCounter = 0
 function nextKey() {
@@ -294,106 +255,6 @@ function toUpdatePayload(name: string, description: string, blocks: BlockEntry[]
             })),
         })),
     }
-}
-
-function ExerciseNameInput({
-    value,
-    onChange,
-    suggestions,
-}: {
-    value: string
-    onChange: (value: string) => void
-    suggestions: string[]
-}) {
-    const [open, setOpen] = useState(false)
-    const [rect, setRect] = useState<DOMRect | null>(null)
-    const containerRef = useRef<HTMLDivElement>(null)
-    const inputRef = useRef<HTMLInputElement>(null)
-    const openRef = useRef(open)
-    openRef.current = open
-
-    const filtered = value.trim()
-        ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase())).slice(0, 10)
-        : []
-
-    const showDropdown = open && filtered.length > 0
-
-    const syncRect = useCallback(() => {
-        if (inputRef.current) {
-            setRect(inputRef.current.getBoundingClientRect())
-        }
-    }, [])
-
-    useEffect(() => {
-        function handler(e: MouseEvent) {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setOpen(false)
-            }
-        }
-        document.addEventListener('mousedown', handler)
-        return () => document.removeEventListener('mousedown', handler)
-    }, [])
-
-    useEffect(() => {
-        function onScroll() {
-            if (openRef.current) syncRect()
-        }
-        document.addEventListener('scroll', onScroll, { capture: true })
-        window.addEventListener('resize', onScroll)
-        return () => {
-            document.removeEventListener('scroll', onScroll, { capture: true })
-            window.removeEventListener('resize', onScroll)
-        }
-    }, [syncRect])
-
-    const handleFocus = useCallback(() => {
-        syncRect()
-        setOpen(true)
-    }, [syncRect])
-
-    return (
-        <div ref={containerRef}>
-            <Input
-                ref={inputRef}
-                value={value}
-                autoComplete="off"
-                onChange={(e) => onChange(e.target.value)}
-                onFocus={handleFocus}
-                placeholder="Exercise name"
-                className="h-8 border-0 px-1 text-sm shadow-none focus-visible:ring-0 bg-transparent!"
-            />
-            {showDropdown &&
-                rect &&
-                createPortal(
-                    <div
-                        className="fixed z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
-                        style={{
-                            top: rect.bottom + 4,
-                            left: rect.left,
-                            width: rect.width,
-                        }}
-                    >
-                        <div className="max-h-48 overflow-y-auto p-1">
-                            {filtered.map((name) => (
-                                <button
-                                    key={name}
-                                    type="button"
-                                    className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        onChange(name)
-                                        setOpen(false)
-                                    }}
-                                >
-                                    {name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>,
-                    document.body,
-                )}
-        </div>
-    )
 }
 
 function clampIdx(idx: number, arr: { length: number }) {
@@ -626,6 +487,49 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
     )
 
+    const moveExercise = useCallback(
+        (fromIdx: number, toIdx: number) => {
+            setBlocks((prev) => {
+                const block = prev[selectedBlockIdx]
+                if (!block) return prev
+                const week = block.weeks[selectedWeekIdx]
+                if (!week) return prev
+                const day = week.days[selectedDayIdx]
+                if (!day) return prev
+                const newBlocks = [...prev]
+                const newWeeks = [...block.weeks]
+                const newDays = [...week.days]
+                newDays[selectedDayIdx] = {
+                    ...day,
+                    exercises: arrayMove(day.exercises, fromIdx, toIdx),
+                }
+                newWeeks[selectedWeekIdx] = { ...week, days: newDays }
+                newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
+                return newBlocks
+            })
+        },
+        [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
+    )
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    )
+
+    const handleDragEnd = useCallback(
+        (event: DragEndEvent) => {
+            const { active, over } = event
+            if (!over || active.id === over.id) return
+            const exercises = selectedDay?.exercises
+            if (!exercises) return
+            const oldIndex = exercises.findIndex((e) => e._key === active.id)
+            const newIndex = exercises.findIndex((e) => e._key === over.id)
+            if (oldIndex === -1 || newIndex === -1) return
+            moveExercise(oldIndex, newIndex)
+        },
+        [selectedDay, moveExercise],
+    )
+
     const updateExercise = useCallback(
         (idx: number, field: keyof ExerciseEntry, value: string) => {
             setBlocks((prev) => {
@@ -838,143 +742,74 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                         {selectedDay && (
                             <>
                                 <SectionLabel>Exercises</SectionLabel>
-                                <div className="rounded-xl border border-border overflow-hidden">
-                                    <table className="w-full caption-bottom text-sm">
-                                        <thead>
-                                            <tr className="border-b border-border">
-                                                <th className="h-9 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    Exercise
-                                                </th>
-                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    Sets
-                                                </th>
-                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    Reps
-                                                </th>
-                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    RPE
-                                                </th>
-                                                <th className="h-9 w-20 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    Load
-                                                </th>
-                                                <th className="h-9 w-14 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    Actual
-                                                </th>
-                                                <th className="h-9 w-12 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    RPE
-                                                </th>
-                                                <th className="h-9 w-10" />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {selectedDay.exercises.map((ex, i) => (
-                                                <tr
-                                                    key={ex._key}
-                                                    className={
-                                                        i < selectedDay.exercises.length - 1
-                                                            ? 'border-b border-border'
-                                                            : ''
-                                                    }
-                                                >
-                                                    <td className="p-2 pl-3">
-                                                        <ExerciseNameInput
-                                                            value={ex.name}
-                                                            onChange={(v) =>
-                                                                updateExercise(i, 'name', v)
-                                                            }
-                                                            suggestions={exerciseNames}
-                                                        />
-                                                    </td>
-                                                    <td className="p-2">
-                                                        <Input
-                                                            value={ex.sets}
-                                                            onChange={(e) =>
-                                                                updateExercise(
-                                                                    i,
-                                                                    'sets',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            placeholder="-"
-                                                            className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
-                                                        />
-                                                    </td>
-                                                    <td className="p-2">
-                                                        <Input
-                                                            value={ex.reps}
-                                                            onChange={(e) =>
-                                                                updateExercise(
-                                                                    i,
-                                                                    'reps',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            placeholder="-"
-                                                            className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
-                                                        />
-                                                    </td>
-                                                    <td className="p-2">
-                                                        <Input
-                                                            value={ex.expectedRpe}
-                                                            onChange={(e) =>
-                                                                updateExercise(
-                                                                    i,
-                                                                    'expectedRpe',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            placeholder="-"
-                                                            className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
-                                                        />
-                                                    </td>
-                                                    <td className="p-2">
-                                                        <Input
-                                                            value={ex.loadRange}
-                                                            onChange={(e) =>
-                                                                updateExercise(
-                                                                    i,
-                                                                    'loadRange',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            placeholder="-"
-                                                            className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
-                                                        />
-                                                    </td>
-                                                    <td className="p-1 text-center text-sm tabular-nums text-muted-foreground">
-                                                        {ex.loadActual || '\u2014'}
-                                                    </td>
-                                                    <td className="p-1 text-center text-sm tabular-nums text-muted-foreground">
-                                                        {ex.rpeActual
-                                                            ? `@${ex.rpeActual}`
-                                                            : '\u2014'}
-                                                    </td>
-                                                    <td className="p-2">
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon-xs"
-                                                            onClick={() => removeExercise(i)}
-                                                        >
-                                                            <Trash2Icon className="size-3" />
-                                                        </Button>
-                                                    </td>
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <div className="rounded-xl border border-border overflow-hidden">
+                                        <table className="w-full caption-bottom text-sm">
+                                            <thead>
+                                                <tr className="border-b border-border">
+                                                    <th className="h-9 w-8" />
+                                                    <th className="h-9 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Exercise
+                                                    </th>
+                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Sets
+                                                    </th>
+                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Reps
+                                                    </th>
+                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        RPE
+                                                    </th>
+                                                    <th className="h-9 w-20 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Load
+                                                    </th>
+                                                    <th className="h-9 w-14 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Actual
+                                                    </th>
+                                                    <th className="h-9 w-12 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        RPE
+                                                    </th>
+                                                    <th className="h-9 w-10" />
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    <div className="px-3 py-2">
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={addExercise}
-                                        >
-                                            <PlusIcon className="size-3.5" />
-                                            Add exercise
-                                        </Button>
+                                            </thead>
+                                            <tbody>
+                                                <SortableContext
+                                                    items={selectedDay.exercises.map((e) => e._key)}
+                                                    strategy={verticalListSortingStrategy}
+                                                >
+                                                    {selectedDay.exercises.map((ex, i) => (
+                                                        <SortableExerciseRow
+                                                            key={ex._key}
+                                                            ex={ex}
+                                                            index={i}
+                                                            exercisesLength={
+                                                                selectedDay.exercises.length
+                                                            }
+                                                            updateExercise={updateExercise}
+                                                            removeExercise={removeExercise}
+                                                            exerciseNames={exerciseNames}
+                                                        />
+                                                    ))}
+                                                </SortableContext>
+                                            </tbody>
+                                        </table>
+                                        <div className="px-3 py-2">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={addExercise}
+                                            >
+                                                <PlusIcon className="size-3.5" />
+                                                Add exercise
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
+                                </DndContext>
                             </>
                         )}
 
@@ -1178,6 +1013,108 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 </Button>
             </div>
         </form>
+    )
+}
+
+function SortableExerciseRow({
+    ex,
+    index,
+    exercisesLength,
+    updateExercise,
+    removeExercise,
+    exerciseNames,
+}: {
+    ex: ExerciseEntry
+    index: number
+    exercisesLength: number
+    updateExercise: (idx: number, field: keyof ExerciseEntry, value: string) => void
+    removeExercise: (idx: number) => void
+    exerciseNames: string[]
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: ex._key,
+    })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    return (
+        <tr
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                index < exercisesLength - 1 ? 'border-b border-border' : '',
+                isDragging && 'relative z-10 bg-accent rounded-md',
+            )}
+        >
+            <td className="p-0">
+                <button
+                    type="button"
+                    className="flex size-8 items-center justify-center cursor-grab active:cursor-grabbing rounded"
+                    {...attributes}
+                    {...listeners}
+                >
+                    <GripVertical className="size-3.5 text-muted-foreground" />
+                </button>
+            </td>
+            <td className="p-2">
+                <ExerciseNameInput
+                    value={ex.name}
+                    onChange={(v) => updateExercise(index, 'name', v)}
+                    suggestions={exerciseNames}
+                />
+            </td>
+            <td className="p-2">
+                <Input
+                    value={ex.sets}
+                    onChange={(e) => updateExercise(index, 'sets', e.target.value)}
+                    placeholder="-"
+                    className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
+                />
+            </td>
+            <td className="p-2">
+                <Input
+                    value={ex.reps}
+                    onChange={(e) => updateExercise(index, 'reps', e.target.value)}
+                    placeholder="-"
+                    className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
+                />
+            </td>
+            <td className="p-2">
+                <Input
+                    value={ex.expectedRpe}
+                    onChange={(e) => updateExercise(index, 'expectedRpe', e.target.value)}
+                    placeholder="-"
+                    className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
+                />
+            </td>
+            <td className="p-2">
+                <Input
+                    value={ex.loadRange}
+                    onChange={(e) => updateExercise(index, 'loadRange', e.target.value)}
+                    placeholder="-"
+                    className="h-8 border-0 px-1 text-center text-sm shadow-none focus-visible:ring-0"
+                />
+            </td>
+            <td className="p-1 text-center text-sm tabular-nums text-muted-foreground">
+                {ex.loadActual || '\u2014'}
+            </td>
+            <td className="p-1 text-center text-sm tabular-nums text-muted-foreground">
+                {ex.rpeActual ? `@${ex.rpeActual}` : '\u2014'}
+            </td>
+            <td className="p-2">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => removeExercise(index)}
+                >
+                    <Trash2Icon className="size-3" />
+                </Button>
+            </td>
+        </tr>
     )
 }
 

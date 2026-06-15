@@ -1,5 +1,9 @@
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000'
 
+export function isEmailVerificationEnabled() {
+    return process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_ENABLED !== 'false'
+}
+
 export interface ExerciseData {
     id: string
     name: string
@@ -40,6 +44,14 @@ export interface ProgramData {
     name: string
     description: string | null
     blocks: BlockData[]
+}
+
+export interface ExerciseVideo {
+    id: string
+    exerciseName: string
+    videoUrl: string
+    thumbnailUrl: string | null
+    createdAt: string
 }
 
 export class ApiError extends Error {
@@ -102,6 +114,10 @@ export async function apiGet(path: string, token: string) {
     }
 
     return data
+}
+
+export async function getVideos(token: string) {
+    return (await apiGet('/api/videos', token)) as ExerciseVideo[]
 }
 
 export async function apiPost(path: string, body: Record<string, unknown>, token?: string) {

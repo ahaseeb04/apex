@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSheet } from '@/components/theme-sheet'
+import { FontSheet } from '@/components/font-sheet'
 
 export function AppHeader({
     title,
@@ -47,6 +48,7 @@ export function AppHeader({
                     >
                         {email}
                     </span>
+                    <FontSheet />
                     <ThemeSheet />
                     <Button variant="outline" onClick={onSignOut}>
                         Sign Out
