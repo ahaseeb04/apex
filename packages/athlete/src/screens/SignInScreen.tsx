@@ -14,12 +14,16 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 
 import InputField from '../components/InputField'
 import { ApiError, useAuthStore } from '../stores/authStore'
+import { isEmailVerificationEnabled } from '../lib/api'
+import { useActiveTheme } from '../stores/themeStore'
 import type { RootStackParamList } from './types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignIn'>
 
 export default function SignInScreen({ navigation }: Props) {
     const signIn = useAuthStore((s) => s.signIn)
+    const theme = useActiveTheme()
+    const c = theme.colors
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -39,6 +43,26 @@ export default function SignInScreen({ navigation }: Props) {
             await signIn(email.trim(), password)
         } catch (e) {
             if (e instanceof ApiError) {
+                if (
+                    e.status === 403 &&
+                    typeof e.body === 'object' &&
+                    e.body !== null
+                ) {
+                    const body = e.body as Record<string, unknown>
+                    if (
+                        body.error === 'email not verified' &&
+                        typeof body.userId === 'string' &&
+                        typeof body.email === 'string'
+                    ) {
+                        if (isEmailVerificationEnabled()) {
+                            navigation.navigate('VerifyEmail', {
+                                userId: body.userId,
+                                email: body.email,
+                            })
+                            return
+                        }
+                    }
+                }
                 setError(e.getErrorMessage())
             } else {
                 setError('Unable to connect to server')
@@ -49,23 +73,29 @@ export default function SignInScreen({ navigation }: Props) {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: c.surface }}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
                 <Pressable className="flex-1 px-6" onPress={Keyboard.dismiss}>
-                    <View className="flex-1 justify-center" style={{ rowGap: 0 }}>
-                        <Text className="text-label text-[34px] font-bold tracking-tight">
-                            Sign In
+                    <View className="flex-1 justify-center" style={{ gap: 0 }}>
+                        <Text
+                            className="text-[32px] font-bold tracking-tight"
+                            style={{ color: c.label }}
+                        >
+                            Sign in
                         </Text>
-                        <Text className="text-label-secondary text-[17px] mb-12 mt-1">
-                            Welcome back to PeakPound
+                        <Text
+                            className="text-[16px] mt-1.5 mb-10"
+                            style={{ color: c.labelSecondary }}
+                        >
+                            to continue to Conspiracy Barbell
                         </Text>
 
-                        <View style={{ rowGap: 20 }}>
+                        <View style={{ gap: 16 }}>
                             <InputField
-                                label="Email"
+                                label="Email address"
                                 value={email}
                                 onChangeText={setEmail}
                                 placeholder="you@example.com"
@@ -75,44 +105,54 @@ export default function SignInScreen({ navigation }: Props) {
                                 label="Password"
                                 value={password}
                                 onChangeText={setPassword}
-                                placeholder="Required"
+                                placeholder="Enter your password"
                                 secureTextEntry
                             />
                         </View>
 
                         {error ? (
-                            <Text className="text-accent-red text-[15px] mt-4 text-center">
+                            <Text
+                                className="text-[14px] mt-5 text-center"
+                                style={{ color: c.error }}
+                            >
                                 {error}
                             </Text>
                         ) : null}
 
                         <Pressable
-                            className="bg-accent-blue rounded-[14px] py-[17px] mt-6 items-center justify-center active:opacity-80 disabled:opacity-50"
+                            className="rounded-[12px] py-[16px] mt-8 items-center justify-center active:opacity-80 disabled:opacity-50"
+                            style={{ backgroundColor: c.accent }}
                             onPress={handleSignIn}
                             disabled={loading}
                             accessibilityRole="button"
-                            accessibilityLabel="Sign In"
+                            accessibilityLabel="Continue"
                         >
                             {loading ? (
-                                <ActivityIndicator color="#FFFFFF" size="small" />
+                                <ActivityIndicator color={c.label} size="small" />
                             ) : (
-                                <Text className="text-label text-center font-semibold text-[17px] tracking-tight">
-                                    Sign In
+                                <Text
+                                    className="text-center font-semibold text-[16px]"
+                                    style={{ color: c.label }}
+                                >
+                                    Continue
                                 </Text>
                             )}
                         </Pressable>
 
-                        <View className="flex-row justify-center mt-10">
-                            <Text className="text-label-secondary text-[15px]">
-                                Don&apos;t have an account?{' '}
+                        <View className="flex-row justify-center mt-8">
+                            <Text className="text-[15px]" style={{ color: c.labelSecondary }}>
+                                Don't have an account?{' '}
                             </Text>
                             <Pressable
                                 onPress={() => navigation.navigate('SignUp')}
                                 accessibilityRole="button"
-                                accessibilityLabel="Sign Up"
+                                accessibilityLabel="Sign up"
                             >
-                                <Text className="text-accent-blue font-semibold text-[15px]">
-                                    Sign Up
+                                <Text
+                                    className="font-semibold text-[15px]"
+                                    style={{ color: c.accent }}
+                                >
+                                    Sign up
                                 </Text>
                             </Pressable>
                         </View>

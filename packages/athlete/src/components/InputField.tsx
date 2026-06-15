@@ -1,5 +1,7 @@
 import { type KeyboardTypeOptions, Text, TextInput, View } from 'react-native'
 
+import { useActiveTheme } from '../stores/themeStore'
+
 interface InputFieldProps {
     label: string
     value: string
@@ -9,6 +11,8 @@ interface InputFieldProps {
     keyboardType?: KeyboardTypeOptions
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
     autoCorrect?: boolean
+    maxLength?: number
+    variant?: 'bordered' | 'filled'
 }
 
 export default function InputField({
@@ -20,24 +24,40 @@ export default function InputField({
     keyboardType,
     autoCapitalize,
     autoCorrect,
+    maxLength,
+    variant = 'bordered',
 }: InputFieldProps) {
+    const c = useActiveTheme().colors
+
+    const isBordered = variant === 'bordered'
+
     return (
         <View>
-            <Text className="text-label-secondary text-[13px] font-medium mb-2 ml-1 tracking-wide uppercase">
+            <Text
+                className="text-[13px] font-medium mb-2 ml-1 tracking-wide"
+                style={{ color: c.labelSecondary }}
+            >
                 {label}
             </Text>
             <TextInput
-                className="bg-surface-tertiary text-label text-[17px] rounded-[12px] px-4 py-[14px] leading-[22px]"
+                className="text-[17px] rounded-[12px] px-4 py-[14px] leading-[22px]"
+                style={{
+                    backgroundColor: isBordered ? 'transparent' : c.surfaceTertiary,
+                    color: c.label,
+                    borderWidth: isBordered ? 1 : 0,
+                    borderColor: isBordered ? c.border : 'transparent',
+                }}
                 placeholder={placeholder}
-                placeholderTextColor="#636366"
+                placeholderTextColor={c.labelTertiary}
                 value={value}
                 onChangeText={onChangeText}
                 secureTextEntry={secureTextEntry}
                 keyboardType={keyboardType}
                 autoCapitalize={autoCapitalize ?? 'none'}
                 autoCorrect={autoCorrect ?? false}
-                cursorColor="#0A84FF"
-                selectionColor="#0A84FF"
+                maxLength={maxLength}
+                cursorColor={c.accent}
+                selectionColor={c.accent}
                 accessibilityLabel={label}
             />
         </View>
