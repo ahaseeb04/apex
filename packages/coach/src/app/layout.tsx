@@ -43,12 +43,6 @@ export default function RootLayout({
                 dmSans.variable,
             )}
         >
-            <head>
-                <link
-                    rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;600;700&display=swap"
-                />
-            </head>
             <body className="min-h-full flex flex-col">
                 <Providers>{children}</Providers>
                 <Toaster />

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontId = 'system' | 'inter' | 'dm-sans' | 'google-sans' | 'proxima-nova' | 'avenir'
+export type FontId = 'system' | 'inter' | 'dm-sans' | 'google-sans' | 'avenir'
 
 interface Font {
     id: FontId
@@ -18,7 +18,6 @@ export const fonts: Font[] = [
     { id: 'inter', name: 'Inter', variable: '--font-sans' },
     { id: 'dm-sans', name: 'DM Sans', variable: '--font-dm-sans' },
     { id: 'google-sans', name: 'Google Sans', variable: '--font-google-sans' },
-    { id: 'proxima-nova', name: 'Proxima Nova', variable: "'Proxima Nova', sans-serif" },
     { id: 'avenir', name: 'Avenir', variable: 'Avenir, system-ui, sans-serif' },
 ]
 
