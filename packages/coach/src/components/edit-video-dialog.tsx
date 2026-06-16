@@ -95,7 +95,11 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon-xs" className="text-muted-foreground/40 hover:text-foreground">
+                <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-muted-foreground/40 hover:text-foreground"
+                >
                     <PencilIcon className="size-3" />
                 </Button>
             </DialogTrigger>
@@ -108,7 +112,7 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor={`edit-exercise-${video.id}`}>Exercise Name</Label>
+                        <Label htmlFor={`edit-exercise-${video.id}`}>Exercise</Label>
                         <div className="relative">
                             <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                             <ExerciseNameInput
@@ -156,7 +160,9 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                             thumbnailFile ? (
                                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3.5">
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium">{thumbnailFile.name}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {thumbnailFile.name}
+                                        </p>
                                         <p className="text-xs text-muted-foreground">
                                             {(thumbnailFile.size / 1024).toFixed(0)} KB
                                         </p>
@@ -193,14 +199,14 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                                         <UploadIcon
                                             className={cn(
                                                 'size-4 transition-colors',
-                                                dragOver
-                                                    ? 'text-primary'
-                                                    : 'text-muted-foreground',
+                                                dragOver ? 'text-primary' : 'text-muted-foreground',
                                             )}
                                         />
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                        {dragOver ? 'Drop to upload' : 'Drop image or click to browse'}
+                                        {dragOver
+                                            ? 'Drop to upload'
+                                            : 'Drop image or click to browse'}
                                     </p>
                                     <input
                                         ref={fileInputRef}
@@ -222,11 +228,7 @@ export function EditVideoDialog({ video, onUpdated }: EditVideoDialogProps) {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={() => setOpen(false)}
-                        disabled={saving}
-                    >
+                    <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
                         Cancel
                     </Button>
                     <Button

@@ -126,3 +126,7 @@
     font-family: var(--font-family, var(--font-sans));
   }
 }
+
+[data-sonner-toaster] {
+  font-family: var(--font-family, var(--font-sans)) !important;
+}

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/input'
 import { getExerciseNames } from '@/lib/api'
 
-const EXERCISE_NAMES_CACHE_KEY = 'exerciseNames'
+const EXERCISE_NAMES_CACHE_KEY = 'exercise_names'
 const CACHE_TTL = 3 * 60 * 60 * 1000
 
 interface ExerciseNamesCache {

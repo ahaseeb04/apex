@@ -32,14 +32,14 @@ export default function Home() {
     const [search, setSearch] = useState('')
     const [activeTab, setActiveTab] = useState(() => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('tab') || 'users'
+            return localStorage.getItem('home_tab') || 'users'
         }
         return 'users'
     })
 
     function handleTabChange(tab: string) {
         setActiveTab(tab)
-        localStorage.setItem('tab', tab)
+        localStorage.setItem('home_tab', tab)
     }
 
     useEffect(() => {

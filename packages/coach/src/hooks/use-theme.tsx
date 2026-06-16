@@ -1,15 +1,9 @@
 'use client'
 
-import {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    type ReactNode,
-} from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { themes, defaultTheme, type Theme, type ThemeColors } from '@/lib/themes'
 
-const STORAGE_KEY = 'coach-theme'
+const STORAGE_KEY = 'coach_theme'
 
 function getStoredThemeId(): string | null {
     if (typeof window === 'undefined') return null
@@ -95,7 +89,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const stored = getStoredThemeId()
         const initial = stored
-            ? themes.find((t) => t.id === stored) ?? defaultTheme
+            ? (themes.find((t) => t.id === stored) ?? defaultTheme)
             : defaultTheme
         applyTheme(initial)
         queueMicrotask(() => setTheme(initial))
@@ -111,11 +105,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setTheme(next)
     }
 
-    return (
-        <ThemeContext.Provider value={{ theme, setThemeId }}>
-            {children}
-        </ThemeContext.Provider>
-    )
+    return <ThemeContext.Provider value={{ theme, setThemeId }}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {

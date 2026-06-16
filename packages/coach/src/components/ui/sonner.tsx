@@ -40,6 +40,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
         classNames: {
           toast: "cn-toast",
         },
+        style: {
+          fontFamily: "var(--font-family, var(--font-sans))",
+        },
       }}
       {...props}
     />

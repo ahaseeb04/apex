@@ -266,12 +266,13 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         ? fromProgram(program)
         : { name: '', description: '', blocks: [emptyBlock(1)] }
 
-    const storageKey = program ? `program-${program.id}` : null
+    const [programId, setProgramId] = useState<string | undefined>(program?.id)
+    const storageKey = programId ? `program_${programId}` : null
     const saved = storageKey
         ? (() => {
               try {
                   const raw = localStorage.getItem(storageKey)
-                  if (raw) return JSON.parse(raw) as { b: number; w: number; d: number }
+                  if (raw) return JSON.parse(raw) as { b: number; w: number }
               } catch {
                   // ignore
               }
@@ -290,16 +291,9 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         const block = initial.blocks[saved.b]
         return block ? clampIdx(saved.w, block.weeks) : 0
     })
-    const [selectedDayIdx, setSelectedDayIdx] = useState(() => {
-        if (!saved) return 0
-        const block = initial.blocks[saved.b]
-        const week = block?.weeks[saved.w]
-        return week ? clampIdx(saved.d, week.days) : 0
-    })
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [weekSelectKey, setWeekSelectKey] = useState(0)
-    const [daySelectKey, setDaySelectKey] = useState(0)
     const exerciseNames = useExerciseNames()
 
     useEffect(() => {
@@ -307,15 +301,14 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         try {
             localStorage.setItem(
                 storageKey,
-                JSON.stringify({ b: selectedBlockIdx, w: selectedWeekIdx, d: selectedDayIdx }),
+                JSON.stringify({ b: selectedBlockIdx, w: selectedWeekIdx }),
             )
         } catch {
             // ignore
         }
-    }, [storageKey, selectedBlockIdx, selectedWeekIdx, selectedDayIdx])
+    }, [storageKey, selectedBlockIdx, selectedWeekIdx])
 
     const weekCountRef = useRef<number | null>(null)
-    const dayCountRef = useRef<number | null>(null)
 
     useLayoutEffect(() => {
         const block = blocks[selectedBlockIdx]
@@ -324,32 +317,17 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         weekCountRef.current = weekLen
         if (prev != null && weekLen > prev) {
             setSelectedWeekIdx(weekLen - 1)
-            setSelectedDayIdx(0)
             setWeekSelectKey((k) => k + 1)
         }
     }, [blocks, selectedBlockIdx])
 
-    useLayoutEffect(() => {
-        const block = blocks[selectedBlockIdx]
-        const week = block?.weeks[selectedWeekIdx]
-        const dayLen = week?.days.length ?? 0
-        const prev = dayCountRef.current
-        dayCountRef.current = dayLen
-        if (prev != null && dayLen > prev) {
-            setSelectedDayIdx(dayLen - 1)
-            setDaySelectKey((k) => k + 1)
-        }
-    }, [blocks, selectedBlockIdx, selectedWeekIdx])
-
     const selectedBlock = blocks[selectedBlockIdx]
     const selectedWeek = selectedBlock?.weeks[selectedWeekIdx]
-    const selectedDay = selectedWeek?.days[selectedDayIdx]
 
     const addBlock = useCallback(() => {
         setBlocks((prev) => [...prev, emptyBlock(prev.length + 1)])
         setSelectedBlockIdx(blocks.length)
         setSelectedWeekIdx(0)
-        setSelectedDayIdx(0)
     }, [blocks.length])
 
     const removeBlock = useCallback(
@@ -359,7 +337,6 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
             if (selectedBlockIdx >= idx) {
                 setSelectedBlockIdx(Math.max(0, selectedBlockIdx - 1))
                 setSelectedWeekIdx(0)
-                setSelectedDayIdx(0)
             }
         },
         [blocks.length, selectedBlockIdx],
@@ -392,7 +369,6 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 }
                 if (selectedWeekIdx >= idx) {
                     setSelectedWeekIdx(Math.max(0, selectedWeekIdx - 1))
-                    setSelectedDayIdx(0)
                 }
                 return newBlocks
             })
@@ -433,73 +409,73 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                     days: week.days.filter((_, i) => i !== idx),
                 }
                 newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
-                if (selectedDayIdx >= idx) {
-                    setSelectedDayIdx(Math.max(0, selectedDayIdx - 1))
-                }
                 return newBlocks
             })
         },
-        [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
+        [selectedBlockIdx, selectedWeekIdx],
     )
 
-    const addExercise = useCallback(() => {
-        setBlocks((prev) => {
-            const block = prev[selectedBlockIdx]
-            if (!block) return prev
-            const week = block.weeks[selectedWeekIdx]
-            if (!week) return prev
-            const day = week.days[selectedDayIdx]
-            if (!day) return prev
-            const newBlocks = [...prev]
-            const newWeeks = [...block.weeks]
-            const newDays = [...week.days]
-            newDays[selectedDayIdx] = {
-                ...day,
-                exercises: [...day.exercises, emptyExercise()],
-            }
-            newWeeks[selectedWeekIdx] = { ...week, days: newDays }
-            newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
-            return newBlocks
-        })
-    }, [selectedBlockIdx, selectedWeekIdx, selectedDayIdx])
-
-    const removeExercise = useCallback(
-        (idx: number) => {
+    const addExercise = useCallback(
+        (dayIdx: number) => {
             setBlocks((prev) => {
                 const block = prev[selectedBlockIdx]
                 if (!block) return prev
                 const week = block.weeks[selectedWeekIdx]
                 if (!week) return prev
-                const day = week.days[selectedDayIdx]
+                const day = week.days[dayIdx]
                 if (!day) return prev
                 const newBlocks = [...prev]
                 const newWeeks = [...block.weeks]
                 const newDays = [...week.days]
-                newDays[selectedDayIdx] = {
+                newDays[dayIdx] = {
                     ...day,
-                    exercises: day.exercises.filter((_, i) => i !== idx),
+                    exercises: [...day.exercises, emptyExercise()],
                 }
                 newWeeks[selectedWeekIdx] = { ...week, days: newDays }
                 newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
                 return newBlocks
             })
         },
-        [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
+        [selectedBlockIdx, selectedWeekIdx],
     )
 
-    const moveExercise = useCallback(
-        (fromIdx: number, toIdx: number) => {
+    const removeExercise = useCallback(
+        (dayIdx: number, exerciseIdx: number) => {
             setBlocks((prev) => {
                 const block = prev[selectedBlockIdx]
                 if (!block) return prev
                 const week = block.weeks[selectedWeekIdx]
                 if (!week) return prev
-                const day = week.days[selectedDayIdx]
+                const day = week.days[dayIdx]
                 if (!day) return prev
                 const newBlocks = [...prev]
                 const newWeeks = [...block.weeks]
                 const newDays = [...week.days]
-                newDays[selectedDayIdx] = {
+                newDays[dayIdx] = {
+                    ...day,
+                    exercises: day.exercises.filter((_, i) => i !== exerciseIdx),
+                }
+                newWeeks[selectedWeekIdx] = { ...week, days: newDays }
+                newBlocks[selectedBlockIdx] = { ...block, weeks: newWeeks }
+                return newBlocks
+            })
+        },
+        [selectedBlockIdx, selectedWeekIdx],
+    )
+
+    const moveExercise = useCallback(
+        (dayIdx: number, fromIdx: number, toIdx: number) => {
+            setBlocks((prev) => {
+                const block = prev[selectedBlockIdx]
+                if (!block) return prev
+                const week = block.weeks[selectedWeekIdx]
+                if (!week) return prev
+                const day = week.days[dayIdx]
+                if (!day) return prev
+                const newBlocks = [...prev]
+                const newWeeks = [...block.weeks]
+                const newDays = [...week.days]
+                newDays[dayIdx] = {
                     ...day,
                     exercises: arrayMove(day.exercises, fromIdx, toIdx),
                 }
@@ -508,7 +484,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 return newBlocks
             })
         },
-        [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
+        [selectedBlockIdx, selectedWeekIdx],
     )
 
     const sensors = useSensors(
@@ -516,36 +492,22 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
     )
 
-    const handleDragEnd = useCallback(
-        (event: DragEndEvent) => {
-            const { active, over } = event
-            if (!over || active.id === over.id) return
-            const exercises = selectedDay?.exercises
-            if (!exercises) return
-            const oldIndex = exercises.findIndex((e) => e._key === active.id)
-            const newIndex = exercises.findIndex((e) => e._key === over.id)
-            if (oldIndex === -1 || newIndex === -1) return
-            moveExercise(oldIndex, newIndex)
-        },
-        [selectedDay, moveExercise],
-    )
-
     const updateExercise = useCallback(
-        (idx: number, field: keyof ExerciseEntry, value: string) => {
+        (dayIdx: number, exerciseIdx: number, field: keyof ExerciseEntry, value: string) => {
             setBlocks((prev) => {
                 const block = prev[selectedBlockIdx]
                 if (!block) return prev
                 const week = block.weeks[selectedWeekIdx]
                 if (!week) return prev
-                const day = week.days[selectedDayIdx]
+                const day = week.days[dayIdx]
                 if (!day) return prev
                 const newBlocks = [...prev]
                 const newWeeks = [...block.weeks]
                 const newDays = [...week.days]
-                newDays[selectedDayIdx] = {
+                newDays[dayIdx] = {
                     ...day,
                     exercises: day.exercises.map((e, i) =>
-                        i === idx ? { ...e, [field]: value } : e,
+                        i === exerciseIdx ? { ...e, [field]: value } : e,
                     ),
                 }
                 newWeeks[selectedWeekIdx] = { ...week, days: newDays }
@@ -553,7 +515,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 return newBlocks
             })
         },
-        [selectedBlockIdx, selectedWeekIdx, selectedDayIdx],
+        [selectedBlockIdx, selectedWeekIdx],
     )
 
     async function handleSubmit(e: React.FormEvent) {
@@ -567,13 +529,15 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
 
         setSaving(true)
         try {
-            if (program) {
-                await updateProgram(program.id, toUpdatePayload(name.trim(), description, blocks))
+            if (programId) {
+                await updateProgram(programId, toUpdatePayload(name.trim(), description, blocks))
+                toast.success('Program Saved')
             } else {
-                await createProgram(toCreatePayload(userId, name.trim(), description, blocks))
+                const created = await createProgram(toCreatePayload(userId, name.trim(), description, blocks))
+                const populated = fromProgram(created)
+                setBlocks(populated.blocks)
+                setProgramId(created.id)
             }
-
-            toast.success('Program Saved')
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to save program')
         } finally {
@@ -607,7 +571,6 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                 onClick={() => {
                                     setSelectedBlockIdx(idx)
                                     setSelectedWeekIdx(0)
-                                    setSelectedDayIdx(0)
                                 }}
                                 className={cn(
                                     'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
@@ -649,167 +612,181 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                             className="h-9"
                         />
 
-                        <SectionLabel>Week & Day</SectionLabel>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="flex gap-2 items-center">
-                                <Select
-                                    key={weekSelectKey}
-                                    value={String(selectedWeekIdx)}
-                                    onValueChange={(v) => {
-                                        setSelectedWeekIdx(Number(v))
-                                        setSelectedDayIdx(0)
-                                    }}
-                                >
-                                    <SelectTrigger className="flex-1">
-                                        <SelectValue>
-                                            {selectedWeek
-                                                ? `Week ${selectedWeek.weekNumber}`
-                                                : 'Week'}
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {selectedBlock.weeks.map((w, i) => (
-                                            <SelectItem key={w._key} value={String(i)}>
-                                                Week {w.weekNumber}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                        <SectionLabel>Schedule</SectionLabel>
+                        <div className="flex gap-2 items-center">
+                            <Select
+                                key={weekSelectKey}
+                                value={String(selectedWeekIdx)}
+                                onValueChange={(v) => setSelectedWeekIdx(Number(v))}
+                            >
+                                <SelectTrigger className="flex-1">
+                                    <SelectValue>
+                                        {selectedWeek ? `Week ${selectedWeek.weekNumber}` : 'Week'}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {selectedBlock.weeks.map((w, i) => (
+                                        <SelectItem key={w._key} value={String(i)}>
+                                            Week {w.weekNumber}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={addWeek}
+                            >
+                                <PlusIcon className="size-4" />
+                            </Button>
+                            {selectedBlock.weeks.length > 1 && (
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="icon-sm"
-                                    onClick={addWeek}
+                                    onClick={() => removeWeek(selectedWeekIdx)}
                                 >
-                                    <PlusIcon className="size-4" />
+                                    <Trash2Icon className="size-4" />
                                 </Button>
-                                {selectedBlock.weeks.length > 1 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon-sm"
-                                        onClick={() => removeWeek(selectedWeekIdx)}
-                                    >
-                                        <Trash2Icon className="size-4" />
-                                    </Button>
-                                )}
-                            </div>
-
-                            {selectedWeek && (
-                                <div className="flex gap-2 items-center">
-                                    <Select
-                                        key={daySelectKey}
-                                        value={String(selectedDayIdx)}
-                                        onValueChange={(v) => setSelectedDayIdx(Number(v))}
-                                    >
-                                        <SelectTrigger className="flex-1">
-                                            <SelectValue>
-                                                {selectedDay
-                                                    ? `Day ${selectedDay.dayNumber}`
-                                                    : 'Day'}
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {selectedWeek.days.map((d, i) => (
-                                                <SelectItem key={d._key} value={String(i)}>
-                                                    Day {d.dayNumber}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon-sm"
-                                        onClick={addDay}
-                                    >
-                                        <PlusIcon className="size-4" />
-                                    </Button>
-                                    {selectedWeek.days.length > 1 && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon-sm"
-                                            onClick={() => removeDay(selectedDayIdx)}
-                                        >
-                                            <Trash2Icon className="size-4" />
-                                        </Button>
-                                    )}
-                                </div>
                             )}
                         </div>
 
-                        {selectedDay && (
+                        {selectedWeek && (
                             <>
-                                <SectionLabel>Exercises</SectionLabel>
-                                <DndContext
-                                    sensors={sensors}
-                                    collisionDetection={closestCenter}
-                                    onDragEnd={handleDragEnd}
-                                >
-                                    <div className="rounded-xl border border-border overflow-hidden">
-                                        <table className="w-full caption-bottom text-sm">
-                                            <thead>
-                                                <tr className="border-b border-border">
-                                                    <th className="h-9 w-8" />
-                                                    <th className="h-9 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        Exercise
-                                                    </th>
-                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        Sets
-                                                    </th>
-                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        Reps
-                                                    </th>
-                                                    <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        RPE
-                                                    </th>
-                                                    <th className="h-9 w-20 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        Load
-                                                    </th>
-                                                    <th className="h-9 w-14 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        Actual
-                                                    </th>
-                                                    <th className="h-9 w-12 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                        RPE
-                                                    </th>
-                                                    <th className="h-9 w-10" />
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <SortableContext
-                                                    items={selectedDay.exercises.map((e) => e._key)}
-                                                    strategy={verticalListSortingStrategy}
-                                                >
-                                                    {selectedDay.exercises.map((ex, i) => (
-                                                        <SortableExerciseRow
-                                                            key={ex._key}
-                                                            ex={ex}
-                                                            index={i}
-                                                            exercisesLength={
-                                                                selectedDay.exercises.length
-                                                            }
-                                                            updateExercise={updateExercise}
-                                                            removeExercise={removeExercise}
-                                                            exerciseNames={exerciseNames}
-                                                        />
-                                                    ))}
-                                                </SortableContext>
-                                            </tbody>
-                                        </table>
-                                        <div className="px-3 py-2">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={addExercise}
+                                <div className="space-y-6">
+                                    {selectedWeek.days.map((day, dayIdx) => (
+                                        <div key={day._key} className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-base font-semibold">
+                                                    Day {day.dayNumber}
+                                                </h3>
+                                                {selectedWeek.days.length > 1 && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon-xs"
+                                                        onClick={() => removeDay(dayIdx)}
+                                                    >
+                                                        <Trash2Icon className="size-3.5" />
+                                                    </Button>
+                                                )}
+                                            </div>
+
+                                            <DndContext
+                                                sensors={sensors}
+                                                collisionDetection={closestCenter}
+                                                onDragEnd={(event: DragEndEvent) => {
+                                                    const { active, over } = event
+                                                    if (!over || active.id === over.id) return
+                                                    const exercises = day.exercises
+                                                    const oldIndex = exercises.findIndex(
+                                                        (e) => e._key === active.id,
+                                                    )
+                                                    const newIndex = exercises.findIndex(
+                                                        (e) => e._key === over.id,
+                                                    )
+                                                    if (oldIndex === -1 || newIndex === -1) return
+                                                    moveExercise(dayIdx, oldIndex, newIndex)
+                                                }}
                                             >
-                                                <PlusIcon className="size-3.5" />
-                                                Add exercise
-                                            </Button>
+                                                <div className="rounded-xl border border-border overflow-hidden">
+                                                    <table className="w-full caption-bottom text-sm">
+                                                        <thead>
+                                                            <tr className="border-b border-border">
+                                                                <th className="h-9 w-8" />
+                                                                <th className="h-9 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    Exercise
+                                                                </th>
+                                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    Sets
+                                                                </th>
+                                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    Reps
+                                                                </th>
+                                                                <th className="h-9 w-14 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    RPE
+                                                                </th>
+                                                                <th className="h-9 w-20 px-2 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    Load
+                                                                </th>
+                                                                <th className="h-9 w-14 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    Actual
+                                                                </th>
+                                                                <th className="h-9 w-12 px-1 text-center align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                                    RPE
+                                                                </th>
+                                                                <th className="h-9 w-10" />
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <SortableContext
+                                                                items={day.exercises.map(
+                                                                    (e) => e._key,
+                                                                )}
+                                                                strategy={
+                                                                    verticalListSortingStrategy
+                                                                }
+                                                            >
+                                                                {day.exercises.map((ex, i) => (
+                                                                    <SortableExerciseRow
+                                                                        key={ex._key}
+                                                                        ex={ex}
+                                                                        index={i}
+                                                                        exercisesLength={
+                                                                            day.exercises.length
+                                                                        }
+                                                                        updateExercise={(
+                                                                            idx,
+                                                                            field,
+                                                                            value,
+                                                                        ) =>
+                                                                            updateExercise(
+                                                                                dayIdx,
+                                                                                idx,
+                                                                                field,
+                                                                                value,
+                                                                            )
+                                                                        }
+                                                                        removeExercise={(idx) =>
+                                                                            removeExercise(
+                                                                                dayIdx,
+                                                                                idx,
+                                                                            )
+                                                                        }
+                                                                        exerciseNames={
+                                                                            exerciseNames
+                                                                        }
+                                                                    />
+                                                                ))}
+                                                            </SortableContext>
+                                                        </tbody>
+                                                    </table>
+                                                    <div className="px-3 py-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => addExercise(dayIdx)}
+                                                        >
+                                                            <PlusIcon className="size-3.5" />
+                                                            Add exercise
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </DndContext>
                                         </div>
-                                    </div>
-                                </DndContext>
+                                    ))}
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={addDay}
+                                    >
+                                        <PlusIcon className="size-3.5" />
+                                        Add Day
+                                    </Button>
+                                </div>
                             </>
                         )}
 
@@ -1009,7 +986,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
                 <Button type="submit" disabled={saving} className="w-full" size="lg">
-                    {saving ? 'Saving...' : program ? 'Save Changes' : 'Create Program'}
+                    {saving ? 'Saving...' : programId ? 'Save Changes' : 'Create Program'}
                 </Button>
             </div>
         </form>

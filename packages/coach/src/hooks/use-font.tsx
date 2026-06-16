@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontId = 'system' | 'inter' | 'dm-sans' | 'google-sans' | 'avenir'
+export type FontId = 'system' | 'inter' | 'dm-sans' | 'google-sans' | 'avenir-next'
 
 interface Font {
     id: FontId
@@ -18,10 +18,10 @@ export const fonts: Font[] = [
     { id: 'inter', name: 'Inter', variable: '--font-sans' },
     { id: 'dm-sans', name: 'DM Sans', variable: '--font-dm-sans' },
     { id: 'google-sans', name: 'Google Sans', variable: '--font-google-sans' },
-    { id: 'avenir', name: 'Avenir', variable: 'Avenir, system-ui, sans-serif' },
+    { id: 'avenir-next', name: 'Avenir Next', variable: 'Avenir Next, system-ui, sans-serif' },
 ]
 
-const STORAGE_KEY = 'coach-font'
+const STORAGE_KEY = 'coach_font'
 
 function getStoredFontId(): FontId | null {
     if (typeof window === 'undefined') return null
