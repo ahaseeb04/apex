@@ -214,6 +214,7 @@ export default function UserProgramsPage() {
                                                                     setPrograms((prev) =>
                                                                         prev.filter((p) => p.id !== program.id),
                                                                     )
+                                                                    localStorage.removeItem(`program_${program.id}`)
                                                                     toast.success('Program deleted')
                                                                 } catch {
                                                                     toast.error('Failed to delete program')
