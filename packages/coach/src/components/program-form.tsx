@@ -533,7 +533,9 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                 await updateProgram(programId, toUpdatePayload(name.trim(), description, blocks))
                 toast.success('Program Saved')
             } else {
-                const created = await createProgram(toCreatePayload(userId, name.trim(), description, blocks))
+                const created = await createProgram(
+                    toCreatePayload(userId, name.trim(), description, blocks),
+                )
                 const populated = fromProgram(created)
                 setBlocks(populated.blocks)
                 setProgramId(created.id)
@@ -866,7 +868,7 @@ export function ProgramForm({ userId, program }: { userId: string; program?: Pro
                                                             Week {week.weekNumber}
                                                         </span>
                                                         {hasData ? (
-                                                            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+                                                            <span className="text-sm tabular-nums text-muted-foreground">
                                                                 {percentage}%
                                                             </span>
                                                         ) : (

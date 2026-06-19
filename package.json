@@ -4,8 +4,12 @@
     "workspaces": [
         "packages/*"
     ],
+    "scripts": {
+        "dev": "concurrently -n api,coach -c blue,green \"bun run --filter api dev\" \"bun run --filter coach dev\""
+    },
     "devDependencies": {
-        "@types/bun": "latest"
+        "@types/bun": "latest",
+        "concurrently": "^9"
     },
     "peerDependencies": {
         "typescript": "^5"

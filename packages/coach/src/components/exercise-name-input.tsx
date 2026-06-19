@@ -133,7 +133,7 @@ export function ExerciseNameInput({
                 rect &&
                 createPortal(
                     <div
-                        className="fixed z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+                        className="pointer-events-auto fixed z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
                         style={{
                             top: rect.bottom + 4,
                             left: rect.left,
